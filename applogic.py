@@ -90,12 +90,12 @@ class AppLogic(threading.Thread):
                     if self.tradingDay.is_highlow_set():
                         while not self.tradingDay.is_10_before_close():
                             if not self.isOrderOpen() and not self.waitingforCrossOver():
-                                if self.price >= self.tradingDay.high:
+                                if self.price > self.tradingDay.high:
                                     order = BracketOrder(self.nextOrderId, self.account, self.gen_contract(), "BUY",
                                                          self.price)
                                     self.openOrderIds = order.transmit(self.app)
                                     self.waitCrossover = True
-                                elif self.price <= self.tradingDay.low:
+                                elif self.price < self.tradingDay.low:
                                     order = BracketOrder(self.nextOrderId, self.account, self.gen_contract(), "SELL",
                                                          self.price)
                                     self.openOrderIds = order.transmit(self.app)
