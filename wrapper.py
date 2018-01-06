@@ -8,7 +8,7 @@ from ibapi.common import *
 from ibapi.ticktype import *
 from ibapi.execution import *
 
-from applogic import AppLogic
+from logic import AppLogic
 
 import config
 

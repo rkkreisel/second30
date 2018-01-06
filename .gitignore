@@ -1,2 +1,4 @@
-trader.log
+*.log
 ibapi/
+*.pyc
+__pycache__/

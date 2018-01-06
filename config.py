@@ -1,20 +1,13 @@
 VERSION = "0.0.1"
-LOGFILE = "trader.log"
+LOGFILE = "second30.log"
+
 HOST = "localhost"
+PORT = 55555
+CLIENTID = 1
 
-#SYMBOL="SPY"
 SHARE_SIZE = 1
-#PRICE_SPREAD = .1
-PRICE_SPREAD = 1
-stop_spread = .75
+BUY_SPREAD = 1
+STOP_SPREAD = .75
 
-#Symbol = "SPY"
-#secType = "STK"
-#exchange = "ISLAND"
-
-Symbol = "ES"
-secType = "FUT"
-exchange = "GLOBEX"
-LocalSymbol = "ESH8"
-
-OrderRef = "Second30"
+SYMBOL = "ES"
+EXCHANGE = "GLOBEX"
