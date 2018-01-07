@@ -1,4 +1,6 @@
-VERSION = "0.0.1"
+""" Second30 Configuration Values """
+
+VERSION = "0.1"
 LOGFILE = "second30.log"
 
 HOST = "localhost"

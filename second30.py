@@ -40,7 +40,7 @@ def main():
 
     try:
         console().info("Connecting to TWS API at {}:{}. Client ID: {}"
-            .format(config.HOST, config.PORT, config.CLIENTID))
+                       .format(config.HOST, config.PORT, config.CLIENTID))
 
         app.connect(config.HOST, config.PORT, clientId=config.CLIENTID)
 
