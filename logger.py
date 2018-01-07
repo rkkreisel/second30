@@ -24,6 +24,6 @@ def setupLogger():
     console_handler.setFormatter(logging.Formatter(LOGFMT))
     console.addHandler(console_handler)
 
-def log(msg):
-    """ Log to the Console and File"""
-    logging.getLogger(name="console").info(msg)
+def getConsole():
+    """ Get a Console Object for Logging Messages"""
+    return logging.getLogger(name="console")

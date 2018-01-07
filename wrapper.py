@@ -8,7 +8,7 @@ from ibapi import wrapper
 from ibapi.utils import iswrapper
 
 from logic import AppLogic
-from logger import log
+from logger import getConsole as console
 
 ########## CLASS DEFINITON ##########
 class AppWrapper(wrapper.EWrapper):
@@ -21,7 +21,7 @@ class AppWrapper(wrapper.EWrapper):
     @iswrapper
     def nextValidId(self, orderId):
         self.logic.nextOrderId = orderId
-        log("Next Order ID: {}".format(orderId))
+        console().info("Next Order ID: {}".format(orderId))
         if not self.startedLogic:
             self.logic.start()
             self.startedLogic = True

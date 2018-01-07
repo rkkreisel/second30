@@ -4,7 +4,7 @@
 import threading
 
 ########## CUSTOM IMPORTS ##########
-from logger import log
+from logger import getConsole as console
 
 ########## CLASS DEFINITON ##########
 class AppLogic(threading.Thread):

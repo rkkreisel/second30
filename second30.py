@@ -6,7 +6,7 @@ import signal
 
 ########## CUSTOM IMPORTS ##########
 import config
-from logger import setupLogger, log
+from logger import setupLogger, getConsole as console
 from ibapi.client import EClient
 from wrapper import AppWrapper
 
@@ -25,7 +25,7 @@ class Second30Trader(AppWrapper, AppClient):
 
     def interruptHandler(self, *_):
         """ Gracefully quit on CTRL+C """
-        log("Disconnecting From API...")
+        console().info("Disconnecting From API...")
         self.disconnect()
         sys.exit(0)
 
@@ -34,21 +34,21 @@ def main():
     """ Setup Logging and Intialize Algo Trader """
 
     setupLogger()
-    log("Started Second30 Trader v{}".format(config.VERSION))
+    console().info("Started Second30 Trader v{}".format(config.VERSION))
 
     app = Second30Trader()
 
     try:
-        log("Connecting to TWS API at {}:{}. Client ID: {}"
+        console().info("Connecting to TWS API at {}:{}. Client ID: {}"
             .format(config.HOST, config.PORT, config.CLIENTID))
 
         app.connect(config.HOST, config.PORT, clientId=config.CLIENTID)
 
         if app.isConnected():
-            log("Connection Successful.  Server Version: {}".format(app.serverVersion()))
+            console().info("Connection Successful.  Server Version: {}".format(app.serverVersion()))
             app.run()
         else:
-            log("Connection Failed")
+            console().info("Connection Failed")
     except:
         raise
 
