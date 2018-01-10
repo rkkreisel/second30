@@ -34,3 +34,16 @@ class AppWrapper(wrapper.EWrapper):
     def managedAccounts(self, accountsList):
         self.logic.account = Account(accountsList)
         console().info("Received Account: {}".format(self.logic.account))
+
+    @iswrapper
+    def contractDetails(self, reqId, contractDetails):
+        super().contractDetails(reqId, contractDetails)
+        symbol = contractDetails.summary.localSymbol
+        expires = contractDetails.summary.lastTradeDateOrContractMonth
+        console().info("Received Contract Details for: {}. Expires: {}".format(symbol, expires))
+        self.logic.client.pushRequestData(reqId, {symbol : contractDetails})
+
+    def contractDetailsEnd(self, reqId):
+        super().contractDetailsEnd(reqId)
+        console().info("Got All Contract Details.")
+        self.logic.client.finishRequest(reqId)
