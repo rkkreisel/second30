@@ -30,5 +30,5 @@ def parseAccountString(accountString):
     """ Parse Comma Separated Account List from IB """
     accounts = accountString.split(",")
     if len(accounts) > 1:
-        console().info("Received More than One Account. Not Implemented.")
+        console().error("Received More than One Account. Not Implemented.")
     return accounts[0]
