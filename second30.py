@@ -6,9 +6,12 @@ import signal
 
 ########## CUSTOM IMPORTS ##########
 import config
-from logger import setupLogger, getConsole as console
+
 from ibapi.client import EClient
+
+from logger import setupLogger, getConsole as console
 from wrapper import AppWrapper
+from request_manager import RequestManager
 
 ########## CLASSES ##########
 class AppClient(EClient):
@@ -16,11 +19,12 @@ class AppClient(EClient):
     def __init__(self, wrapper):
         EClient.__init__(self, wrapper)
 
-class Second30Trader(AppWrapper, AppClient):
+class Second30Trader(AppWrapper, AppClient, RequestManager):
     """ Client, Wrapper, and Logic Bundler """
     def __init__(self):
         AppWrapper.__init__(self)
         AppClient.__init__(self, wrapper=self)
+        RequestManager.__init__(self)
         signal.signal(signal.SIGINT, self.interruptHandler)
 
     def interruptHandler(self, *_):

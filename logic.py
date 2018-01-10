@@ -6,14 +6,19 @@ import threading
 ########## CUSTOM IMPORTS ##########
 from logger import getConsole as console
 
+from contracts import getContractDetails, getCurrentFuturesContract
+
 ########## CLASS DEFINITON ##########
 class AppLogic(threading.Thread):
     """ Thread to Hold Algorithm Logic """
-    def __init__(self, app):
+    def __init__(self, client):
         threading.Thread.__init__(self)
         self.daemon = True
-        self.app = app
-        self.name = "AppLogic"
+        self.client = client
+        self.name = "Logic"
 
     def run(self):
-        pass
+        console().info("Staring Second30 App Logic...")
+
+        futures = getContractDetails(self.client)
+        currentFuture = getCurrentFuturesContract(futures)
