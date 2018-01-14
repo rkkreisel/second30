@@ -2,11 +2,13 @@
 
 ########## STDLIB IMPORTS ##########
 import threading
+from datetime import date
 
 ########## CUSTOM IMPORTS ##########
 from logger import getConsole as console
 
 from contracts import getContractDetails, getCurrentFuturesContract
+from tradingday import TradingDay
 
 ########## CLASS DEFINITON ##########
 class AppLogic(threading.Thread):
@@ -22,3 +24,14 @@ class AppLogic(threading.Thread):
 
         futures = getContractDetails(self.client)
         currentFuture = getCurrentFuturesContract(futures)
+
+        today = date.today()
+        tradingDay = TradingDay(currentFuture)
+
+        while True:
+            if  date.today() != today:
+                today = date.today()
+                tradingDay = TradingDay(currentFuture)
+
+
+            
