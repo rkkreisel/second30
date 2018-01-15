@@ -4,24 +4,31 @@ import os
 import sys
 import logging
 
+from datetime import datetime
+
 ########## CUSTOM IMPORTS ##########
 import config
 
-########## CONSTANTS ##########
-LOGFMT = "%(asctime)s - %(funcName)s::%(lineno)d [%(threadName)s]: %(message)s"
+########## FUNCTIONS ##########
+class LogFormatter(logging.Formatter):
+    """ Custom Log Formatting """
+    def format(self, record):
+        time = datetime.fromtimestamp(record.created).strftime("%Y-%m-%d %H:%M:%S")
+        header = "{} [{:s}]::{:s}".format(time, record.module, record.funcName)
+        return "{:60s} - {}".format(header, record.getMessage())
 
-########## CUSTOM IMPORTS ##########
 def setupLogger():
     """ Configure and Initiate Logging """
 
     if os.path.exists(config.LOGFILE):
         os.remove(config.LOGFILE)
 
-    logging.basicConfig(filename=config.LOGFILE, level=logging.INFO, format=LOGFMT)
+
+    logging.basicConfig(filename=config.LOGFILE, level=logging.INFO)
 
     console = logging.getLogger(name="console")
     console_handler = logging.StreamHandler(stream=sys.stdout)
-    console_handler.setFormatter(logging.Formatter(LOGFMT))
+    console_handler.setFormatter(LogFormatter())
     console.addHandler(console_handler)
 
 def getConsole():
