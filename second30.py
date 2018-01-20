@@ -30,6 +30,7 @@ class Second30Trader(AppWrapper, AppClient, RequestManager):
     def interruptHandler(self, *_):
         """ Gracefully quit on CTRL+C """
         console().info("Disconnecting From API...")
+        self.stopAllSubscriptions()
         self.disconnect()
         sys.exit(0)
 

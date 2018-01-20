@@ -6,6 +6,9 @@ from logger import getConsole as console
 ########## CLASS DEFINITION ##########
 class RequestManager():
     """ Manage Request ID's and their Results """
+
+    REQUEST_ID = "REQUEST_ID_PLACEHOLDER"
+
     def __init__(self):
         self.nextRequestId = 100
         self.data = {}
@@ -46,3 +49,32 @@ class RequestManager():
         while not self.data[reqId]["complete"]:
             pass
         return self.getRequestData(reqId)
+
+    def subscribe(self, name, startFunc, startArgs, stopFunc, stopArgs):
+        """ Create Subscription To IBAPI """
+        requestId = self.startRequest()
+        startArgs = [requestId if x == self.REQUEST_ID else x for x in startArgs]
+        stopArgs = [requestId if x == self.REQUEST_ID else x for x in stopArgs]
+
+        self.pushRequestData(requestId, {"subscription": (name, stopFunc, stopArgs)})
+        startFunc(*startArgs)
+        return requestId
+
+    def stopSubscription(self, reqId):
+        """ Stop a Single Subscription and notify IBAPI """
+        try:
+            name, stopFunc, stopArgs = self.data[reqId]["subscription"]
+            console().info("Stopping Subscription: {}".format(name))
+        except KeyError:
+            console().error("Failed to Stop Subscription: {}.".format(name))
+            console().error(self.data)
+            return
+        self.data.pop(reqId, None)
+        stopFunc(*stopArgs)
+
+    def stopAllSubscriptions(self):
+        """ Stop all Current Subscriptions and notify IBAPI """
+        console().info("Stopping All Active Subscriptions...")
+        subs = [x for x, keys in self.data.items() if "subscription" in keys]
+        for sub in subs:
+            self.stopSubscription(sub)
