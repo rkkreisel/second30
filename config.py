@@ -1,5 +1,10 @@
 """ Second30 Configuration Values """
 
+########## CUSTOM IMPORTS ##########
+from constants import *
+
+########## CONFIGURATION ##########
+
 VERSION = "0.1"
 LOGFILE = "second30.log"
 
@@ -16,3 +21,6 @@ EXCHANGE = "GLOBEX"
 
 #Normal Timezone is CST.
 NORMAL_TRADING_HOURS = "1700-1515,1530-1600"
+
+# Type of Market Data To Stream. (LIVE, DELAYED, FROZEN_DELAYED)
+DATATYPE = "FROZEN_DELAYED"
