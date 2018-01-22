@@ -98,3 +98,11 @@ class RequestManager():
         else:
             for key, value in streams.items():
                 print("\t{}: {}".format(value["subscription"][0], value["price"]))
+
+        print("Positions:")
+        positions = self.logic.account.positions
+        if not positions: print("\tNone")
+        else:
+            for key, value in positions.items():
+                print("\t{}: #Contracts: {}".format(key, value[1]))
+        print("")

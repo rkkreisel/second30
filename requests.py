@@ -15,4 +15,15 @@ def subscribePriceData(client, future):
         stopArgs=[client.REQUEST_ID],
     )
 
+def subscribeAccountPositions(client):
+    """ Subscribe to Updates in Held Positions """
+    console().info("Subscribing to Account Position Updates")
+    return client.subscribe(
+        name="Account Position Updates",
+        startFunc=client.reqPositions,
+        startArgs=[],
+        stopFunc=client.cancelPositions,
+        stopArgs=[],
+    )
+
 ########## DATA REQUESTS ##########
