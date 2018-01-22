@@ -17,6 +17,9 @@ class RequestManager():
     def startRequest(self):
         """ Generate a new Request ID """
         requestId = self.nextRequestId
+        while requestId in self.data.keys():
+            self.nextRequestId += 1
+            requestId += 1
         if self.nextRequestId == 1000:
             self.nextRequestId = 100
         else:
@@ -78,3 +81,20 @@ class RequestManager():
         subs = [x for x, keys in self.data.items() if "subscription" in keys]
         for sub in subs:
             self.stopSubscription(sub)
+
+    def printStatus(self):
+        """ Show Current Subscriptions and Price Data """
+
+        print("\nSubscriptions: ")
+        subs = {k: v for k, v in self.data.items() if "subscription" in v.keys()}
+        if not subs: print("\tNone")
+        else:
+            for key, value in subs.items():
+                print("\tID: {}. Name: {}".format(key, value["subscription"][0]))
+
+        print("Streaming Data:")
+        streams = {k: v for k, v in self.data.items() if "price" in v.keys()}
+        if not streams: print("\tNone")
+        else:
+            for key, value in streams.items():
+                print("\t{}: {}".format(value["subscription"][0], value["price"]))

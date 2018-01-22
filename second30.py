@@ -26,6 +26,7 @@ class Second30Trader(AppWrapper, AppClient, RequestManager):
         AppClient.__init__(self, wrapper=self)
         RequestManager.__init__(self)
         signal.signal(signal.SIGINT, self.interruptHandler)
+        signal.signal(signal.SIGTSTP, self.statusHandler)
 
     def interruptHandler(self, *_):
         """ Gracefully quit on CTRL+C """
@@ -33,6 +34,10 @@ class Second30Trader(AppWrapper, AppClient, RequestManager):
         self.stopAllSubscriptions()
         self.disconnect()
         sys.exit(0)
+
+    def statusHandler(self, *_):
+        """ Show Price and Other Data on Ctrl + Z """
+        self.printStatus()
 
 ########## MAIN ##########
 def main():
