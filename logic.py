@@ -9,7 +9,8 @@ from contracts import getContractDetails, getCurrentFuturesContract
 from tradingday import TradingDay, updateTradingDay
 import config
 from constants import MARKET_DATA_TYPES
-from requests import *
+import requests
+
 ########## CLASS DEFINITON ##########
 class AppLogic(threading.Thread):
     """ Thread to Hold Algorithm Logic """
@@ -24,12 +25,12 @@ class AppLogic(threading.Thread):
         console().info("Staring Second30 App Logic...")
 
         console().info("Setting Market Data Type : {}".format(config.DATATYPE))
+
         self.client.reqMarketDataType(MARKET_DATA_TYPES[config.DATATYPE])
 
         future = getCurrentFuturesContract(getContractDetails(self.client))
         today = TradingDay(future)
-
-        subscribePriceData(self.client, future)
+        requests.subscribePriceData(self.client, future)
 
         while True:
             today = updateTradingDay(today)

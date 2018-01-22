@@ -8,3 +8,7 @@ MARKET_DATA_TYPES = {
     "DELAYED" : 3,
     "FROZEN_DELAYED" : 4
 }
+
+TICK_TYPES = {
+    "LAST_PRICE": 4
+}

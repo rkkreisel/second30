@@ -9,9 +9,9 @@ from ibapi.utils import iswrapper
 
 from logic import AppLogic
 from logger import getConsole as console
-
 from account import Account
 from helpers import waitForProp
+from constants import TICK_TYPES
 
 ########## CLASS DEFINITON ##########
 class AppWrapper(wrapper.EWrapper):
@@ -20,6 +20,7 @@ class AppWrapper(wrapper.EWrapper):
         wrapper.EWrapper.__init__(self)
         self.startedLogic = False
         self.logic = AppLogic(self)
+        self.client = self.logic.client
 
     @iswrapper
     def nextValidId(self, orderId):
@@ -41,9 +42,33 @@ class AppWrapper(wrapper.EWrapper):
         symbol = contractDetails.summary.localSymbol
         expires = contractDetails.summary.lastTradeDateOrContractMonth
         console().info("Received Contract Details for: {}. Expires: {}".format(symbol, expires))
-        self.logic.client.pushRequestData(reqId, {symbol : contractDetails})
+        self.client.pushRequestData(reqId, {symbol : contractDetails})
 
+    @iswrapper
     def contractDetailsEnd(self, reqId):
         super().contractDetailsEnd(reqId)
         console().info("Got All Contract Details.")
-        self.logic.client.finishRequest(reqId)
+        self.client.finishRequest(reqId)
+
+    @iswrapper
+    def tickPrice(self, reqId, tickType, price, attrib):
+        super().tickPrice(reqId, tickType, price, attrib)
+        if tickType == TICK_TYPES["LAST_PRICE"]:
+            self.client.pushRequestData(reqId, {"price":{"last": price}})
+
+    @iswrapper
+    def tickSize(self, reqId, tickType, size):
+        super().tickSize(reqId, tickType, size)
+
+    @iswrapper
+    def tickGeneric(self, reqId, tickType, value):
+        super().tickGeneric(reqId, tickType, value)
+
+    @iswrapper
+    def tickString(self, reqId, tickType, value):
+        super().tickString(reqId, tickType, value)
+
+    @iswrapper
+    def error(self, reqId, errorCode, errorString):
+        super().error(reqId, errorCode, errorString)
+        console().info("[{},{}] API Message: {}".format(reqId, errorCode, errorString))

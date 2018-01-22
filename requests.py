@@ -8,7 +8,7 @@ def subscribePriceData(client, future):
     name = future.summary.localSymbol
     console().info("Requesting a Price Data Subscription For: {}".format(name))
     return client.subscribe(
-        name="{} PRICE DATA".format(config.DATATYPE),
+        name="{} {} Price Data".format(name, config.DATATYPE),
         startFunc=client.reqMktData,
         startArgs=[client.REQUEST_ID, future.summary, "", False, False, None],
         stopFunc=client.cancelMktData,
