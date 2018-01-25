@@ -22,11 +22,13 @@ class TradingDay():
 
     def isNormalTradingDay(self):
         """ Check if Date has Normal Trading Hours. Needs config var"""
-        today = self.contractDetails.tradingHours.split(";")[0]
-        dateString, hours = today.split(":")
+        days = self.contractDetails.tradingHours.split(";")
+        dateString = self.today.strftime("%Y%m%d")
 
-        if dateString != self.today.strftime("%Y%m%d"):
-            console().error("Trading Hours Date Mismatch!")
+        today = [x for x in days if x.split(":")[0] == dateString]
+        if not today:
+            console().error("Missing Contract Market Hours for Today.")
+        hours = today[0]
 
         if hours == "CLOSED" or hours != config.NORMAL_TRADING_HOURS:
             return False
@@ -54,7 +56,7 @@ class TradingDay():
             console().info("Today is not a Valid Trading Day. Sleeping Until Tomorrow")
 
 ########## Functions ##########
-def updateTradingDay(tradingDay):
+def updateToday(tradingDay):
     """ Keep Date and Market Status Current """
     if  date.today() != tradingDay.today:
         tradingDay = TradingDay(tradingDay.contractDetails)

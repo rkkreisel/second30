@@ -1,6 +1,6 @@
 """ Futures Contract Generation / Selection """
 ########## STDLIB IMPORTS ##########
-from datetime import datetime
+from datetime import datetime, date
 
 ########## CUSTOM IMPORTS ##########
 from ibapi.contract import Contract
@@ -17,7 +17,6 @@ def getContractDetails(client):
 
     client.reqContractDetails(reqId, baseContract)
     console().info("Requesting Details For: {}".format(baseContract.symbol))
-    return client.waitForRequest(reqId)
 
 def getCurrentFuturesContract(contractDetails):
     """ Select the Most Current Symbol """
@@ -36,6 +35,12 @@ def getCurrentFuturesContract(contractDetails):
     contract = soonest[1]
     console().info("Picked Current FUT Contract: {}".format(contract.summary.localSymbol))
     return contract
+
+def updateFuture(client, future):
+    """ Get New Futures Contracts Every Day"""
+    contractDate = future.tradingHours.split(";")[0].split(":")[0]
+    if contractDate != date.today().strftime("%Y%m%d"):
+        getContractDetails(client)
 
 def getBaseContract():
     """ Generic Base Contract Generator"""

@@ -13,6 +13,7 @@ from account import Account
 from helpers import waitForProp
 from constants import TICK_TYPES
 from requests import subscribeAccountPositions
+from contracts import getCurrentFuturesContract
 
 ########## CLASS DEFINITON ##########
 class AppWrapper(wrapper.EWrapper):
@@ -51,6 +52,7 @@ class AppWrapper(wrapper.EWrapper):
         super().contractDetailsEnd(reqId)
         console().info("Got All Contract Details.")
         self.client.finishRequest(reqId)
+        self.logic.future = getCurrentFuturesContract(self.client.getRequestData(reqId))
 
     @iswrapper
     def tickPrice(self, reqId, tickType, price, attrib):
@@ -79,7 +81,8 @@ class AppWrapper(wrapper.EWrapper):
     def position(self, account, contract, position, avgCost):
         super().position(account, contract, position, avgCost)
         if account == self.logic.account.account:
-            console().info("Position Update: {}: #Contracts: {}".format(contract.localSymbol, position))
+            console().info("Position Update: {}: #Contracts: {}".format(
+                contract.localSymbol, position))
             self.logic.account.updatePosition(contract, position)
         else:
             console().warning("Got Position for Untracked Account: {}".format(account))
