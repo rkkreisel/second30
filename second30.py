@@ -25,8 +25,12 @@ class Second30Trader(AppWrapper, AppClient, RequestManager):
         AppWrapper.__init__(self)
         AppClient.__init__(self, wrapper=self)
         RequestManager.__init__(self)
-        signal.signal(signal.SIGINT, self.interruptHandler)
-        signal.signal(signal.SIGTSTP, self.statusHandler)
+        try:
+            signal.signal(signal.SIGINT, self.interruptHandler)
+            signal.signal(signal.SIGTSTP, self.statusHandler)
+        except AttributeError:
+            console().warning("Warning. Unable to Bind a Signal Handler.")
+
 
     def interruptHandler(self, *_):
         """ Gracefully quit on CTRL+C """
