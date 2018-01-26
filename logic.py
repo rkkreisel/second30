@@ -2,6 +2,7 @@
 
 ########## STDLIB IMPORTS ##########
 import threading
+from time import sleep
 
 ########## CUSTOM IMPORTS ##########
 from logger import getConsole as console
@@ -41,4 +42,12 @@ class AppLogic(threading.Thread):
             today = updateToday(today)
 
             #Sleep on Non-Trading Days
-            if not today.isNormalTradingDay(): continue
+            if not today.normalDay: continue
+
+            #Wait for 30 after Open
+            while not today.is30AfterOpen(): continue
+
+            if today.is10BeforeClose():
+                pass #Close Open Orders
+
+            sleep(0.05) # Reduce Processor Load.
