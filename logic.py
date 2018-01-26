@@ -37,6 +37,7 @@ class AppLogic(threading.Thread):
         requests.subscribePriceData(self.client, self.future)
 
         while True:
+            sleep(0.05) # Reduce Processor Load.
             future = self.future
             updateFuture(self.client, future)
             today = updateToday(today)
@@ -47,7 +48,8 @@ class AppLogic(threading.Thread):
             #Wait for 30 after Open
             while not today.is30AfterOpen(): continue
 
+            if not today.highLow:
+                today.highLow = requests.getDailyHighLow(self.client, self.future)
+
             if today.is10BeforeClose():
                 pass #Close Open Orders
-
-            sleep(0.05) # Reduce Processor Load.

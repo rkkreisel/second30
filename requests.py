@@ -1,4 +1,7 @@
 """ Algorithm Requests for Data from IBAPI """
+########## STDLIB IMPORTS ##########
+from datetime import datetime, date
+
 ########## CUSTOM IMPORTS ##########
 from logger import getConsole as console
 import config
@@ -25,5 +28,21 @@ def subscribeAccountPositions(client):
         stopFunc=client.cancelPositions,
         stopArgs=[],
     )
+
+def getDailyHighLow(client, future):
+    """ Get the High and Low for the First 30 Mins of Trading """
+    console().info("Getting The First 30 High/Low.")
+
+    reqId = client.startRequest()
+    today = date.today()
+    endTime = datetime(year=today.year, month=today.month, day=today.day, hour=10)
+    endTime = endTime.strftime("%Y%m%d %H:%M:%S")
+
+    client.reqHistoricalData(
+        reqId, future.summary, endTime, "1800 S", "30 mins", "TRADES", 1, 1, False, []
+    )
+
+    return client.waitForRequest(reqId, purge=True)
+
 
 ########## DATA REQUESTS ##########

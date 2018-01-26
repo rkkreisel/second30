@@ -20,6 +20,7 @@ class TradingDay():
         self.normalDay = self.isNormalTradingDay()
         self.thirtyAfterOpen = False
         self.tenBeforeClose = False
+        self.highLow = None
         self.logDayDetails()
 
     def isNormalTradingDay(self):
@@ -59,7 +60,7 @@ class TradingDay():
         """ Check if it is 30 minutes after market open at 9:30AM """
         if self.thirtyAfterOpen: return True
         now = datetime.now()
-        if now.hour >= 9 and now.minute >= 30:
+        if (now.hour == 9 and now.minute >= 30) or now.hour >= 9:
             console().info("It is 30 minutes after Market Opening.")
             self.thirtyAfterOpen = True
             return True

@@ -52,7 +52,9 @@ class AppWrapper(wrapper.EWrapper):
         super().contractDetailsEnd(reqId)
         console().info("Got All Contract Details.")
         self.client.finishRequest(reqId)
-        self.logic.future = getCurrentFuturesContract(self.client.getRequestData(reqId))
+        contractDetails = self.client.getRequestData(reqId)
+        self.client.purgeRequest(reqId)
+        self.logic.future = getCurrentFuturesContract(contractDetails)
 
     @iswrapper
     def tickPrice(self, reqId, tickType, price, attrib):
@@ -75,7 +77,11 @@ class AppWrapper(wrapper.EWrapper):
     @iswrapper
     def error(self, reqId, errorCode, errorString):
         super().error(reqId, errorCode, errorString)
-        console().info("[{},{}] API Message: {}".format(reqId, errorCode, errorString))
+        self.apiMessage(errorString)
+
+    def apiMessage(self, msg):
+        """ Print API Messages """
+        console().info("API: {}".format(msg))
 
     @iswrapper
     def position(self, account, contract, position, avgCost):
@@ -86,3 +92,17 @@ class AppWrapper(wrapper.EWrapper):
             self.logic.account.updatePosition(contract, position)
         else:
             console().warning("Got Position for Untracked Account: {}".format(account))
+
+    @iswrapper
+    def historicalData(self, reqId, bar):
+        console().info(
+            "Got Historical Data. Date:{}. High:${}. Low:${}".format(bar.date, bar.high, bar.low)
+        )
+        self.client.pushRequestData(reqId, {"historical": {"high": bar.high, "low": bar.low}})
+
+
+    @iswrapper
+    def historicalDataEnd(self, reqId, start, end):
+        super().historicalDataEnd(reqId, start, end)
+        console().info("Got First 30 Data For Today")
+        self.client.finishRequest(reqId)
