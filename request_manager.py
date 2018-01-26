@@ -45,13 +45,19 @@ class RequestManager():
         """ Signal that a Request has Completed """
         self.data[reqId]["complete"] = True
 
-    def waitForRequest(self, reqId):
+    def purgeRequest(self, reqId):
+        self.data.pop(reqId, False)
+
+    def waitForRequest(self, reqId, purge=False):
         """ Pause Execution Until a Request Retunrns """
         while self.data[reqId] is None:
             pass
         while not self.data[reqId]["complete"]:
             pass
-        return self.getRequestData(reqId)
+        data = self.getRequestData(reqId)
+        if purge:
+            self.purgeRequest(reqId)
+        return data
 
     def subscribe(self, name, startFunc, startArgs, stopFunc, stopArgs):
         """ Create Subscription To IBAPI """
@@ -106,3 +112,6 @@ class RequestManager():
             for key, value in positions.items():
                 print("\t{}: #Contracts: {}".format(key, value[1]))
         print("")
+        print("Data:")
+        for key, value in self.data.items():
+            print("\t{}: {}".format(key, value))
