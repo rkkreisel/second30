@@ -5,6 +5,7 @@ from datetime import datetime, date
 ########## CUSTOM IMPORTS ##########
 from logger import getConsole as console
 import config
+from constants import REQUEST_NAMES
 ########## SUBSCRIPTIONS ##########
 def subscribePriceData(client, future):
     """ Start Current Price Data Subscription """
@@ -37,12 +38,18 @@ def getDailyHighLow(client, future):
     today = date.today()
     endTime = datetime(year=today.year, month=today.month, day=today.day, hour=10)
     endTime = endTime.strftime("%Y%m%d %H:%M:%S")
-
+    client.pushRequestData(reqId, {"name" : "HIGH/LOW"})
     client.reqHistoricalData(
         reqId, future.summary, endTime, "1800 S", "30 mins", "TRADES", 1, 1, False, []
     )
 
     return client.waitForRequest(reqId, purge=True)
 
+def getOpenOrders(client):
+    """ Get open orders for the current API Client ID """
+    reqId = client.startRequest()
+    client.pushRequestData(reqId, {"name": REQUEST_NAMES["ORDERS"]})
+    client.reqOpenOrders()
+    return client.waitForRequest(reqId, purge=True)
 
 ########## DATA REQUESTS ##########

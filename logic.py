@@ -22,24 +22,27 @@ class AppLogic(threading.Thread):
         self.client = client
         self.name = "Logic"
         self.future = None
+        self.account = None
 
 ########## MAIN ALGO LOGIC  ##########
     def run(self):
+        client  = self.client
         console().info("Staring Second30 App Logic...")
 
         console().info("Setting Market Data Type : {}".format(config.DATATYPE))
-        self.client.reqMarketDataType(MARKET_DATA_TYPES[config.DATATYPE])
+        client.reqMarketDataType(MARKET_DATA_TYPES[config.DATATYPE])
 
-        getContractDetails(self.client)
+        orders = requests.getOpenOrders(client)
+
+        getContractDetails(client)
         waitForProp(self, "future")
         today = TradingDay(self.future)
-
-        requests.subscribePriceData(self.client, self.future)
+        
+        requests.subscribePriceData(client, self.future)
 
         while True:
             sleep(0.05) # Reduce Processor Load.
-            future = self.future
-            updateFuture(self.client, future)
+            updateFuture(client, self.future)
             today = updateToday(today)
 
             #Sleep on Non-Trading Days
@@ -48,8 +51,9 @@ class AppLogic(threading.Thread):
             #Wait for 30 after Open
             while not today.is30AfterOpen(): continue
 
+            #Pull HighLow
             if not today.highLow:
-                today.highLow = requests.getDailyHighLow(self.client, self.future)
+                today.highLow = requests.getDailyHighLow(client, self.future)
 
             if today.is10BeforeClose():
                 pass #Close Open Orders

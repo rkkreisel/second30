@@ -11,7 +11,7 @@ from logic import AppLogic
 from logger import getConsole as console
 from account import Account
 from helpers import waitForProp
-from constants import TICK_TYPES
+from constants import TICK_TYPES, REQUEST_NAMES
 from requests import subscribeAccountPositions
 from contracts import getCurrentFuturesContract
 
@@ -77,11 +77,7 @@ class AppWrapper(wrapper.EWrapper):
     @iswrapper
     def error(self, reqId, errorCode, errorString):
         super().error(reqId, errorCode, errorString)
-        self.apiMessage(errorString)
-
-    def apiMessage(self, msg):
-        """ Print API Messages """
-        console().info("API: {}".format(msg))
+        apiMessage(errorString)
 
     @iswrapper
     def position(self, account, contract, position, avgCost):
@@ -106,3 +102,24 @@ class AppWrapper(wrapper.EWrapper):
         super().historicalDataEnd(reqId, start, end)
         console().info("Got First 30 Data For Today")
         self.client.finishRequest(reqId)
+
+    @iswrapper
+    def openOrder(self, orderId, contract, order, orderState):
+        console().info("Got Order: {}. {}, {}".format(contract, order, orderState))
+        reqId = self.client.getIDByName(REQUEST_NAMES["ORDERS"])
+        if reqId:
+            self.client.pushRequestData(reqId, {orderId: (contract, order, orderState)})
+        else:
+            console().error("Failed to Track Open Orders")
+
+    def openOrderEnd(self):
+        reqId = self.client.getIDByName(REQUEST_NAMES["ORDERS"])
+        if reqId:
+            console().info("Got All Open Orders".format())
+            self.client.finishRequest(reqId)
+        else:
+            console().error("Failed to Track Open Orders")
+
+def apiMessage(msg):
+    """ Print API Messages """
+    console().info("API: {}".format(msg))

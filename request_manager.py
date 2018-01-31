@@ -38,7 +38,8 @@ class RequestManager():
         """ Retreive Response Data from and ID """
         if not self.data[reqId]["complete"]:
             return None
-        self.data[reqId].pop("complete")
+        self.data[reqId].pop("complete", None)
+        self.data[reqId].pop("name", None)
         return self.data[reqId]
 
     def finishRequest(self, reqId):
@@ -46,6 +47,7 @@ class RequestManager():
         self.data[reqId]["complete"] = True
 
     def purgeRequest(self, reqId):
+        """ Remove A Request """
         self.data.pop(reqId, False)
 
     def waitForRequest(self, reqId, purge=False):
@@ -88,6 +90,14 @@ class RequestManager():
         for sub in subs:
             self.stopSubscription(sub)
 
+    def getIDByName(self, name):
+        """ Retrieve a Request ID by Name Field """
+        for key, value in self.data.items():
+            if "name" in value.keys():
+                if value["name"].upper() == name.upper():
+                    return key
+        return None
+
     def printStatus(self):
         """ Show Current Subscriptions and Price Data """
 
@@ -106,7 +116,7 @@ class RequestManager():
                 print("\t{}: {}".format(value["subscription"][0], value["price"]))
 
         print("Positions:")
-        positions = self.logic.account.positions
+        positions = self.logic.account.positions #pylint: disable=no-member
         if not positions: print("\tNone")
         else:
             for key, value in positions.items():
