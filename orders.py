@@ -19,6 +19,8 @@ class BracketOrder():
         self.placeOrders(client, orders)
         client.reqOpenOrders()
 
+        self.entryOrder = orders[0]
+
     def placeOrders(self, client, orders):
         """ Transmit Orders to IB """
         for order in orders:
@@ -42,9 +44,10 @@ class BracketOrder():
         entryOrder.account = self.account.account
         entryOrder.action = action
         entryOrder.orderType = "MIT"
-        entryOrder.totalQuantity = config.NUM_CONTRACTS
-        entryOrder.auxPrice = price
+        offset  = config.ENTRY_SPREAD if action == "BUY" else -config.ENTRY_SPREAD
+        entryOrder.auxPrice = price + offset
         entryOrder.lmtPrice = 0
+        entryOrder.totalQuantity = config.NUM_CONTRACTS
         entryOrder.transmit = False
 
         #Profit Limit

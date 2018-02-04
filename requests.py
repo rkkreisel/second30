@@ -1,7 +1,7 @@
 """ Algorithm Requests for Data from IBAPI """
 ########## STDLIB IMPORTS ##########
 from datetime import datetime, date
-from ibapi.execution import ExecutionFilter
+
 ########## CUSTOM IMPORTS ##########
 from logger import getConsole as console
 import config
@@ -29,37 +29,34 @@ def subscribeAccountPositions(client):
         stopArgs=[],
     )
 
-def getDailyHighLow(client, future):
+def getFirst30HighLow(client, future):
     """ Get the High and Low for the First 30 Mins of Trading """
     console().info("Getting The First 30 High/Low.")
 
     reqId = client.startRequest()
+
     today = date.today()
     endTime = datetime(year=today.year, month=today.month, day=today.day, hour=10)
     endTime = endTime.strftime("%Y%m%d %H:%M:%S")
+
     client.pushRequestData(reqId, {"name" : "HIGH/LOW"})
     client.reqHistoricalData(
         reqId, future.summary, endTime, "1800 S", "30 mins", "TRADES", 1, 1, False, []
     )
+    return client.waitForRequest(reqId, purge=True)["historical"]
 
-    return client.waitForRequest(reqId, purge=True)
-
-def didAlreadyExecute(client):
-    """ Check if Second30 Has Already Executed Today """
+def getFullDayHighLow(client, future):
+    """ Get the High and Low for The Entire Day """
     reqId = client.startRequest()
-    client.pushRequestData(reqId, {"executed" : False})
 
-    execFilter = ExecutionFilter()
-    execFilter.clientId = config.CLIENTID
-    execFilter.time = "{} 00:00:00".format(date.today().strftime("%Y%m%d"))
+    now = datetime.now()
+    delta = now - datetime(year=now.year, month=now.month, day=now.day, hour=9, minute=30)
+    duration = "{} S".format(delta.seconds)
 
-    client.reqExecutions(reqId, execFilter)
-
-    if client.waitForRequest(reqId, purge=True)["executed"]:
-        console().info("Already Traded Today!")
-        return True
-    
-    console().info("No Previous Trades Found for Today.")
-    return False
+    client.pushRequestData(reqId, {"name" : "FULL DAY HIGH/LOW"})
+    client.reqHistoricalData(
+        reqId, future.summary, "", duration, "1 day", "TRADES", 1, 1, False, []
+    )
+    return client.waitForRequest(reqId, purge=True)["historical"]
 
 ########## DATA REQUESTS ##########

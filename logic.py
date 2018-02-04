@@ -40,21 +40,19 @@ class AppLogic(threading.Thread):
         getContractDetails(client)
         waitForProp(self, "future")
         today = TradingDay(self.future)
+        state = getNewState()
 
-        today.executedToday = requests.didAlreadyExecute(client)
-
-        if len(self.account.openOrders):
-            today.executedToday = True
-            console().info("Found Pending Open Orders for Second30")
-
-        requests.subscribePriceData(client, self.future)
-
-        #BracketOrder(client, self.future.summary, "BUY", self.account, 100.5)
+        #Already After 10. Check if Still Valid
+        if today.is30AfterOpen():
+            state = checkMissedExecution(client, self.future, today.normalDay, state)
 
         while True:
-            sleep(0.05) # Reduce Processor Load.
+            sleep(.05) # Reduce Processor Load.
             updateFuture(client, self.future)
-            today = updateToday(today)
+            newDay = updateToday(today)
+            if newDay != today:
+                state = getNewState()
+            today = newDay
 
             #Sleep on Non-Trading Days
             if not today.normalDay: continue
@@ -62,9 +60,65 @@ class AppLogic(threading.Thread):
             #Wait for 30 after Open
             while not today.is30AfterOpen(): continue
 
-            #Pull HighLow
-            if not today.highLow:
-                today.highLow = requests.getDailyHighLow(client, self.future)
+            #Cancel Unused Bracket if the Other Fired
+            if state["executedToday"]:
+                state = cancelUnusedBracket(client, state, self.account.openOrders)
+                continue
 
-            if today.is10BeforeClose():
-                pass #Close Open Orders
+            #Pull HighLow
+            if not state["highLow"]:
+                state["highLow"] = requests.getFirst30HighLow(client, self.future)
+
+            #Submit Orders for the Day
+            contract = self.future.summary
+            high, low = state["highLow"]["high"], state["highLow"]["low"] #pylint: disable=unsubscriptable-object
+
+            state["highBracket"] = BracketOrder(client, contract, "BUY", self.account, high)
+            state["lowBracket"] = BracketOrder(client, contract, "SELL", self.account, low)
+            state["executedToday"] = True
+
+def getNewState():
+    """ Generate a Blank State for a New Day """
+    return {
+        "executedToday" : False,
+        "highLow" : None,
+        "lowBracket" : None,
+        "highBracket" : None
+    }
+
+def cancelUnusedBracket(client, state, openOrders):
+    """ Remove Other Bracket if it Exists """
+    highBracket, lowBracket = state["highBracket"], state["lowBracket"]
+    if highBracket is None and lowBracket is None:
+        return state
+
+    highOrderId = highBracket.entryOrder.orderId
+    lowOrderId = lowBracket.entryOrder.orderId
+
+    if highOrderId not in openOrders.keys():
+        client.cancelOrder(lowOrderId)
+        console().info("Cancelling the Lower Bracket")
+        state["lowBracket"] = None
+        state["highBracket"] = None
+    elif lowOrderId not in openOrders.keys():
+        client.cancelOrder(highOrderId)
+        console().info("Cancelling The Upper Bracket")
+        state["lowBracket"] = None
+        state["highBracket"] = None
+
+    return state
+
+def checkMissedExecution(client, future, normalDay, state):
+    """ Check if We've Missed the Second30 Conditions """
+    if not normalDay: return state
+
+    first30 = requests.getFirst30HighLow(client, future)
+    firstHigh, firstLow = first30["high"], first30["low"]
+
+    allDay = requests.getFullDayHighLow(client, future)
+    dayHigh, dayLow = allDay["high"], allDay["low"]
+
+    if dayHigh > firstHigh or dayLow < firstLow:
+        state["executedToday"] = True
+        console().warning("Already Executed Today or Missed Trading Window. NOT TRADING.")
+    return state

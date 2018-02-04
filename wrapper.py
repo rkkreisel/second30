@@ -99,7 +99,6 @@ class AppWrapper(wrapper.EWrapper):
     @iswrapper
     def historicalDataEnd(self, reqId, start, end):
         super().historicalDataEnd(reqId, start, end)
-        console().info("Got First 30 Data For Today")
         self.client.finishRequest(reqId)
 
     @iswrapper
@@ -119,6 +118,7 @@ class AppWrapper(wrapper.EWrapper):
 
         self.logic.account.openOrders = tmpOrders
         self.logic.account.tmpOrders = {}
+
 
     @iswrapper
     def orderStatus(self, orderId, status, filled, remaining, avgFillPrice,
@@ -140,14 +140,6 @@ class AppWrapper(wrapper.EWrapper):
 
         if status in ["Cancelled", "Filled"]:
             self.client.reqOpenOrders()
-
-    @iswrapper
-    def execDetails(self, reqId, contract, execution):
-        self.client.pushRequestData(reqId, {"executed" : True})
-
-    @iswrapper
-    def execDetailsEnd(self, reqId):
-        self.client.finishRequest(reqId)
 
 def apiMessage(msg):
     """ Print API Messages """
