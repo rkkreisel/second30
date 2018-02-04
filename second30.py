@@ -12,6 +12,7 @@ from ibapi.client import EClient
 from logger import setupLogger, getConsole as console
 from wrapper import AppWrapper
 from request_manager import RequestManager
+from ledger import Ledger
 
 ########## CLASSES ##########
 class AppClient(EClient):
@@ -25,6 +26,7 @@ class Second30Trader(AppWrapper, AppClient, RequestManager):
         AppWrapper.__init__(self)
         AppClient.__init__(self, wrapper=self)
         RequestManager.__init__(self)
+        self.ledger = Ledger()
         try:
             signal.signal(signal.SIGINT, self.interruptHandler)
             signal.signal(signal.SIGTSTP, self.statusHandler)
@@ -37,6 +39,7 @@ class Second30Trader(AppWrapper, AppClient, RequestManager):
         console().info("Disconnecting From API...")
         self.stopAllSubscriptions()
         self.disconnect()
+        self.ledger.close()
         sys.exit(0)
 
     def statusHandler(self, *_):

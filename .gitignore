@@ -1,4 +1,5 @@
 *.log
+*.csv
 ibapi/
 *.pyc
 __pycache__/

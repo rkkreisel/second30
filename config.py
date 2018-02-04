@@ -4,6 +4,7 @@
 
 VERSION = "0.1"
 LOGFILE = "second30.log"
+LEDGERFILE = "second30_trades.csv"
 
 HOST = "localhost"
 PORT = 55555

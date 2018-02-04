@@ -12,6 +12,8 @@ from logger import getConsole as console
 from constants import TICK_TYPES
 from requests import subscribeAccountPositions
 from contracts import getCurrentFuturesContract
+from orders import logOrder
+import config
 
 ########## CLASS DEFINITON ##########
 class AppWrapper(wrapper.EWrapper):
@@ -102,38 +104,42 @@ class AppWrapper(wrapper.EWrapper):
 
     @iswrapper
     def openOrder(self, orderId, contract, order, orderState):
-        price = order.auxPrice if order.auxPrice != 0 else order.lmtPrice
-        orderMsg = "{} {} {} @ {} ${:.2f}".format(
-            order.action, order.totalQuantity, contract.localSymbol, order.orderType, price
-        )
-        if orderId not in self.logic.account.openOrders.keys():
-            console().info("ID: {}: [{}]: {}".format(orderId, orderMsg, orderState.status))
         self.logic.account.tmpOrders[orderId] = (contract, order, orderState.status)
 
     @iswrapper
     def openOrderEnd(self):
-        self.logic.account.openOrders = self.logic.account.tmpOrders
+        openOrders, tmpOrders = self.logic.account.openOrders, self.logic.account.tmpOrders
+        ledger = self.client.ledger
+
+        for orderId, values in tmpOrders.items():
+            symbol, status = values[0].localSymbol, values[2]
+            oldStatus = openOrders[orderId][2] if orderId in openOrders.keys() else None
+
+            logOrder(ledger, orderId, symbol, values[1], status, oldStatus)
+
+        self.logic.account.openOrders = tmpOrders
         self.logic.account.tmpOrders = {}
 
     @iswrapper
     def orderStatus(self, orderId, status, filled, remaining, avgFillPrice,
                     permId, parentId, lastFillPrice, clientId, whyHeld):
-        try:
-            data = self.logic.account.openOrders[orderId]
-            contract, order, oldStatus = data[0].localSymbol, data[1], data[2]
-            price = order.auxPrice if order.auxPrice != 0 else order.lmtPrice
-            orderMsg = "{} {} {} @ {} ${:.2f}".format(
-                order.action, order.totalQuantity, contract, order.orderType, price
-            )
-            self.logic.account.openOrders[orderId] = (data[0], data[1], status)
-        except (KeyError, AttributeError):
-            contract, orderMsg, oldStatus = "?", "?", status
+
+        if clientId != config.CLIENTID:
+            return
+
+        openOrders = self.logic.account.openOrders
+
+        if orderId not in openOrders.keys():
+            return
+
+        contract, order, oldStatus = openOrders[orderId]
+        symbol = contract.localSymbol
+
+        logOrder(self.client.ledger, orderId, symbol, order, status, oldStatus)
+        openOrders[orderId] = (contract, order, status)
 
         if status in ["Cancelled", "Filled"]:
             self.client.reqOpenOrders()
-
-        if oldStatus != status:
-            console().info("ID: {} Status: [{}]: {}".format(orderId, orderMsg, status))
 
 def apiMessage(msg):
     """ Print API Messages """
