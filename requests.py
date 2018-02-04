@@ -1,7 +1,7 @@
 """ Algorithm Requests for Data from IBAPI """
 ########## STDLIB IMPORTS ##########
 from datetime import datetime, date
-
+from ibapi.execution import ExecutionFilter
 ########## CUSTOM IMPORTS ##########
 from logger import getConsole as console
 import config
@@ -43,5 +43,23 @@ def getDailyHighLow(client, future):
     )
 
     return client.waitForRequest(reqId, purge=True)
+
+def didAlreadyExecute(client):
+    """ Check if Second30 Has Already Executed Today """
+    reqId = client.startRequest()
+    client.pushRequestData(reqId, {"executed" : False})
+
+    execFilter = ExecutionFilter()
+    execFilter.clientId = config.CLIENTID
+    execFilter.time = "{} 00:00:00".format(date.today().strftime("%Y%m%d"))
+
+    client.reqExecutions(reqId, execFilter)
+
+    if client.waitForRequest(reqId, purge=True)["executed"]:
+        console().info("Already Traded Today!")
+        return True
+    
+    console().info("No Previous Trades Found for Today.")
+    return False
 
 ########## DATA REQUESTS ##########

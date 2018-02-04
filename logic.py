@@ -41,9 +41,15 @@ class AppLogic(threading.Thread):
         waitForProp(self, "future")
         today = TradingDay(self.future)
 
+        today.executedToday = requests.didAlreadyExecute(client)
+
+        if len(self.account.openOrders):
+            today.executedToday = True
+            console().info("Found Pending Open Orders for Second30")
+
         requests.subscribePriceData(client, self.future)
 
-        BracketOrder(client, self.future.summary, "BUY", self.account, 100.5)
+        #BracketOrder(client, self.future.summary, "BUY", self.account, 100.5)
 
         while True:
             sleep(0.05) # Reduce Processor Load.

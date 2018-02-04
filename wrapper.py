@@ -141,6 +141,14 @@ class AppWrapper(wrapper.EWrapper):
         if status in ["Cancelled", "Filled"]:
             self.client.reqOpenOrders()
 
+    @iswrapper
+    def execDetails(self, reqId, contract, execution):
+        self.client.pushRequestData(reqId, {"executed" : True})
+
+    @iswrapper
+    def execDetailsEnd(self, reqId):
+        self.client.finishRequest(reqId)
+
 def apiMessage(msg):
     """ Print API Messages """
     msg = msg.replace("\n", ". ")
