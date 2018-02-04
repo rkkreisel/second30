@@ -12,6 +12,9 @@ import config
 from constants import MARKET_DATA_TYPES
 import requests
 from helpers import waitForProp
+from orders import BracketOrder
+from account import Account
+
 
 ########## CLASS DEFINITON ##########
 class AppLogic(threading.Thread):
@@ -22,23 +25,25 @@ class AppLogic(threading.Thread):
         self.client = client
         self.name = "Logic"
         self.future = None
-        self.account = None
+        self.account = Account()
 
 ########## MAIN ALGO LOGIC  ##########
     def run(self):
-        client  = self.client
+        client = self.client
         console().info("Staring Second30 App Logic...")
 
         console().info("Setting Market Data Type : {}".format(config.DATATYPE))
         client.reqMarketDataType(MARKET_DATA_TYPES[config.DATATYPE])
 
-        orders = requests.getOpenOrders(client)
+        client.reqOpenOrders()
 
         getContractDetails(client)
         waitForProp(self, "future")
         today = TradingDay(self.future)
-        
+
         requests.subscribePriceData(client, self.future)
+
+        BracketOrder(client, self.future.summary, "BUY", self.account, 100.5)
 
         while True:
             sleep(0.05) # Reduce Processor Load.

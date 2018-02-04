@@ -7,10 +7,12 @@ from logger import getConsole as console
 ########## CLASS DEFINITON ##########
 class Account():
     """ Account Information with Position and Order ID Data"""
-    def __init__(self, accountString):
-        self.account = parseAccountString(accountString)
+    def __init__(self):
+        self.account = None
         self._nextOrderId = None
         self.positions = {}
+        self.openOrders = {}
+        self.tmpOrders = {}
 
 
     def __repr__(self):
@@ -28,6 +30,13 @@ class Account():
         self._nextOrderId += 1
         return orderId
 
+    def setAccount(self, accountString):
+        """ Parse Comma Separated Account List from IB """
+        accounts = accountString.split(",")
+        if len(accounts) > 1:
+            console().error("Received More than One Account. Not Implemented.")
+        self.account = accounts[0]
+
     def updatePosition(self, contract, position):
         """ Add a New Position to the Account """
         key = contract.localSymbol
@@ -35,11 +44,3 @@ class Account():
             self.positions.pop(key)
         if position != 0:
             self.positions[key] = (contract, position)
-
-########## FUNCTIONS ##########
-def parseAccountString(accountString):
-    """ Parse Comma Separated Account List from IB """
-    accounts = accountString.split(",")
-    if len(accounts) > 1:
-        console().error("Received More than One Account. Not Implemented.")
-    return accounts[0]

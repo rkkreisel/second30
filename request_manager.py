@@ -39,7 +39,6 @@ class RequestManager():
         if not self.data[reqId]["complete"]:
             return None
         self.data[reqId].pop("complete", None)
-        self.data[reqId].pop("name", None)
         return self.data[reqId]
 
     def finishRequest(self, reqId):
@@ -90,14 +89,6 @@ class RequestManager():
         for sub in subs:
             self.stopSubscription(sub)
 
-    def getIDByName(self, name):
-        """ Retrieve a Request ID by Name Field """
-        for key, value in self.data.items():
-            if "name" in value.keys():
-                if value["name"].upper() == name.upper():
-                    return key
-        return None
-
     def printStatus(self):
         """ Show Current Subscriptions and Price Data """
 
@@ -121,7 +112,11 @@ class RequestManager():
         else:
             for key, value in positions.items():
                 print("\t{}: #Contracts: {}".format(key, value[1]))
-        print("")
-        print("Data:")
-        for key, value in self.data.items():
-            print("\t{}: {}".format(key, value))
+
+        print("Orders:")
+        orders = self.logic.account.openOrders #pylint: disable=no-member
+        if not orders: print("\tNone")
+        else:
+            for key, value in orders.items():
+                print("\tID {}: Contract: {}. Order: {}. State: {}".format(
+                    key, value[0].localSymbol, value[1], value[2]))

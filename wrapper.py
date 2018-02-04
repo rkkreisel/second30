@@ -9,9 +9,7 @@ from ibapi.utils import iswrapper
 
 from logic import AppLogic
 from logger import getConsole as console
-from account import Account
-from helpers import waitForProp
-from constants import TICK_TYPES, REQUEST_NAMES
+from constants import TICK_TYPES
 from requests import subscribeAccountPositions
 from contracts import getCurrentFuturesContract
 
@@ -26,7 +24,6 @@ class AppWrapper(wrapper.EWrapper):
 
     @iswrapper
     def nextValidId(self, orderId):
-        waitForProp(self.logic, "account")
         self.logic.account.setNextOrderId(orderId)
         console().info("Next Order ID: {}".format(orderId))
         if not self.startedLogic:
@@ -35,7 +32,7 @@ class AppWrapper(wrapper.EWrapper):
 
     @iswrapper
     def managedAccounts(self, accountsList):
-        self.logic.account = Account(accountsList)
+        self.logic.account.setAccount(accountsList)
         console().info("Received Account: {}".format(self.logic.account))
         subscribeAccountPositions(self.client)
 
@@ -105,21 +102,40 @@ class AppWrapper(wrapper.EWrapper):
 
     @iswrapper
     def openOrder(self, orderId, contract, order, orderState):
-        console().info("Got Order: {}. {}, {}".format(contract, order, orderState))
-        reqId = self.client.getIDByName(REQUEST_NAMES["ORDERS"])
-        if reqId:
-            self.client.pushRequestData(reqId, {orderId: (contract, order, orderState)})
-        else:
-            console().error("Failed to Track Open Orders")
+        price = order.auxPrice if order.auxPrice != 0 else order.lmtPrice
+        orderMsg = "{} {} {} @ {} ${:.2f}".format(
+            order.action, order.totalQuantity, contract.localSymbol, order.orderType, price
+        )
+        if orderId not in self.logic.account.openOrders.keys():
+            console().info("ID: {}: [{}]: {}".format(orderId, orderMsg, orderState.status))
+        self.logic.account.tmpOrders[orderId] = (contract, order, orderState.status)
 
+    @iswrapper
     def openOrderEnd(self):
-        reqId = self.client.getIDByName(REQUEST_NAMES["ORDERS"])
-        if reqId:
-            console().info("Got All Open Orders".format())
-            self.client.finishRequest(reqId)
-        else:
-            console().error("Failed to Track Open Orders")
+        self.logic.account.openOrders = self.logic.account.tmpOrders
+        self.logic.account.tmpOrders = {}
+
+    @iswrapper
+    def orderStatus(self, orderId, status, filled, remaining, avgFillPrice,
+                    permId, parentId, lastFillPrice, clientId, whyHeld):
+        try:
+            data = self.logic.account.openOrders[orderId]
+            contract, order, oldStatus = data[0].localSymbol, data[1], data[2]
+            price = order.auxPrice if order.auxPrice != 0 else order.lmtPrice
+            orderMsg = "{} {} {} @ {} ${:.2f}".format(
+                order.action, order.totalQuantity, contract, order.orderType, price
+            )
+            self.logic.account.openOrders[orderId] = (data[0], data[1], status)
+        except (KeyError, AttributeError):
+            contract, orderMsg, oldStatus = "?", "?", status
+
+        if status in ["Cancelled", "Filled"]:
+            self.client.reqOpenOrders()
+
+        if oldStatus != status:
+            console().info("ID: {} Status: [{}]: {}".format(orderId, orderMsg, status))
 
 def apiMessage(msg):
     """ Print API Messages """
+    msg = msg.replace("\n", ". ")
     console().info("API: {}".format(msg))
