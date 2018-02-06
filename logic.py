@@ -43,7 +43,7 @@ class AppLogic(threading.Thread):
         state = getNewState()
 
         #Already After 10. Check if Still Valid
-        if today.is30AfterOpen():
+        if today.isMarketOpen() and today.is30AfterOpen():
             state = checkMissedExecution(client, self.future, today.normalDay, state)
 
         while True:
@@ -57,6 +57,9 @@ class AppLogic(threading.Thread):
             #Sleep on Non-Trading Days
             if not today.normalDay: continue
 
+            #Wait for Market Open
+            while not today.isMarketOpen(): continue
+
             #Wait for 30 after Open
             while not today.is30AfterOpen(): continue
 
@@ -67,6 +70,7 @@ class AppLogic(threading.Thread):
 
             #Pull HighLow
             if not state["highLow"]:
+                console().info("Getting High/Low Data For First 30.")
                 state["highLow"] = requests.getFirst30HighLow(client, self.future)
 
             #Submit Orders for the Day

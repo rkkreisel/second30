@@ -1,9 +1,9 @@
 """ Second30 Configuration Values """
-
+from datetime import datetime
 ########## CONFIGURATION ##########
 
 VERSION = "0.1"
-LOGFILE = "second30.log"
+LOGFILE = "second30_{}.log".format(datetime.now().strftime('%Y%m%d_%H%M'))
 LEDGERFILE = "second30_trades.csv"
 
 HOST = "localhost"

@@ -38,26 +38,43 @@ class BracketOrder():
             "Creating a Bracket Order to {} {}".format(action, self.contract.localSymbol)
         )
 
+        if action == "BUY":
+            entryType = "MIT"
+            entryPrice = price + config.ENTRY_SPREAD
+            profitPrice = entryPrice + config.PROFIT_SPREAD
+            lossPrice = entryPrice - config.STOP_SPREAD
+            bracketAction = "SELL"
+        else:
+            entryType = "STP LMT"
+            entryPrice = price - config.ENTRY_SPREAD
+            profitPrice = entryPrice - config.PROFIT_SPREAD
+            lossPrice = entryPrice + config.STOP_SPREAD
+            bracketAction = "BUY"
+
         #Entry Order for High/Low Crossover
         entryOrder = Order()
         entryOrder.orderId = self.account.getOrderId()
         entryOrder.account = self.account.account
         entryOrder.action = action
-        entryOrder.orderType = "MIT"
-        offset  = config.ENTRY_SPREAD if action == "BUY" else -config.ENTRY_SPREAD
-        entryOrder.auxPrice = price + offset
-        entryOrder.lmtPrice = 0
+        entryOrder.orderType = entryType
+
+        if action == "BUY":
+            entryOrder.auxPrice = entryPrice
+            entryOrder.lmtPrice = 0
+        else:
+            entryOrder.auxPrice = entryPrice
+            entryOrder.lmtPrice = entryPrice
+
         entryOrder.totalQuantity = config.NUM_CONTRACTS
         entryOrder.transmit = False
 
         #Profit Limit
         profitOrder = Order()
         profitOrder.orderId = self.account.getOrderId()
-        profitOrder.action = "SELL" if action == "BUY" else "BUY"
+        profitOrder.action = bracketAction
         profitOrder.orderType = "LMT"
         profitOrder.totalQuantity = config.NUM_CONTRACTS
-        profitLimit = config.PROFIT_SPREAD if action == "BUY" else -config.PROFIT_SPREAD
-        profitOrder.lmtPrice = price + profitLimit
+        profitOrder.lmtPrice = profitPrice
         profitOrder.auxPrice = 0
         profitOrder.parentId = entryOrder.orderId
         profitOrder.transmit = False
@@ -65,11 +82,10 @@ class BracketOrder():
         #Loss Limit
         lossOrder = Order()
         lossOrder.orderId = self.account.getOrderId()
-        lossOrder.action = "SELL" if action == "BUY" else "BUY"
+        lossOrder.action = bracketAction
         lossOrder.orderType = "STP"
         lossOrder.totalQuantity = config.NUM_CONTRACTS
-        lossLimit = config.STOP_SPREAD if action == "SELL" else -config.STOP_SPREAD
-        lossOrder.auxPrice = price + lossLimit
+        lossOrder.auxPrice = lossPrice
         lossOrder.lmtPrice = 0
         lossOrder.parentId = entryOrder.orderId
         lossOrder.transmit = True
@@ -84,5 +100,6 @@ def logOrder(ledger, orderId, symbol, order, newStatus, oldStatus):
     orderMsg = "{} {} {} @ {} ${:.2f}".format(action, quantity, symbol, orderType, price)
     msg = "ID: {} Status: [{}]: {}".format(orderId, orderMsg, newStatus)
     if oldStatus != newStatus:
-        console().info(msg)
+        if newStatus not in ["PendingSubmit", "PreSubmitted"]:
+            console().info(msg)
         ledger.log(orderId, symbol, action, orderType, quantity, price, newStatus)
