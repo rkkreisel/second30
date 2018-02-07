@@ -41,7 +41,7 @@ class TradingDay():
             return False
         now = datetime.now()
         if now.hour >= 9 and now.hour < 16:
-            if now.hour == 9 and now.minutes < 30:
+            if now.hour == 9 and now.minute < 30:
                 return False
             return True
         return False
@@ -60,7 +60,7 @@ class TradingDay():
         """ Check if it is 30 minutes after market open at 9:30AM """
         if self.thirtyAfterOpen: return True
         now = datetime.now()
-        if (now.hour == 9 and now.minute >= 30) or now.hour >= 9 and self.normalDay:
+        if now.hour >= 10 and now.microsecond > 0 and self.normalDay:
             console().info("It is 30 minutes after Market Opening.")
             self.thirtyAfterOpen = True
             return True

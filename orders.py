@@ -39,13 +39,11 @@ class BracketOrder():
         )
 
         if action == "BUY":
-            entryType = "MIT"
             entryPrice = price + config.ENTRY_SPREAD
             profitPrice = entryPrice + config.PROFIT_SPREAD
             lossPrice = entryPrice - config.STOP_SPREAD
             bracketAction = "SELL"
         else:
-            entryType = "STP LMT"
             entryPrice = price - config.ENTRY_SPREAD
             profitPrice = entryPrice - config.PROFIT_SPREAD
             lossPrice = entryPrice + config.STOP_SPREAD
@@ -56,15 +54,9 @@ class BracketOrder():
         entryOrder.orderId = self.account.getOrderId()
         entryOrder.account = self.account.account
         entryOrder.action = action
-        entryOrder.orderType = entryType
-
-        if action == "BUY":
-            entryOrder.auxPrice = entryPrice
-            entryOrder.lmtPrice = 0
-        else:
-            entryOrder.auxPrice = entryPrice
-            entryOrder.lmtPrice = entryPrice
-
+        entryOrder.orderType = "STP"
+        entryOrder.auxPrice = entryPrice
+        entryOrder.lmtPrice = 0
         entryOrder.totalQuantity = config.NUM_CONTRACTS
         entryOrder.transmit = False
 
