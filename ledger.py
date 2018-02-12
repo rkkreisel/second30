@@ -10,7 +10,7 @@ import config
 class Ledger():
     """ Ledger Class to Record Order Status in CSV """
     def __init__(self):
-        self.f = open(config.LEDGERFILE, 'w')
+        self.f = open(config.LEDGERFILE, 'a')
         self.writer = writer(self.f, quoting=QUOTE_MINIMAL)
         if stat(config.LEDGERFILE).st_size == 0:
             self.writeHeaders()
