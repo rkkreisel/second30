@@ -9,9 +9,10 @@ import config
 
 class BracketOrder():
     """ Bracket Order Creation and Transmission """
-    def __init__(self, client, contract, action, account, price):
+    def __init__(self, client, contract, action, account, price, stop):
         self.contract = contract
         self.account = account
+        self.stopPrice = stop
         if action != "BUY" and action != "SELL":
             raise ValueError("Bad Action Value: {}".format(action))
 
@@ -41,12 +42,12 @@ class BracketOrder():
         if action == "BUY":
             entryPrice = price + config.ENTRY_SPREAD
             profitPrice = entryPrice + config.PROFIT_SPREAD
-            lossPrice = entryPrice - config.STOP_SPREAD
+            lossPrice = entryPrice - self.stopPrice
             bracketAction = "SELL"
         else:
             entryPrice = price - config.ENTRY_SPREAD
             profitPrice = entryPrice - config.PROFIT_SPREAD
-            lossPrice = entryPrice + config.STOP_SPREAD
+            lossPrice = entryPrice + self.stopPrice
             bracketAction = "BUY"
 
         #Entry Order for High/Low Crossover

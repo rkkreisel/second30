@@ -73,12 +73,27 @@ class AppLogic(threading.Thread):
                 console().info("Getting High/Low Data For First 30.")
                 state["highLow"] = requests.getFirst30HighLow(client, self.future)
 
-            #Submit Orders for the Day
-            contract = self.future.summary
             high, low = state["highLow"]["high"], state["highLow"]["low"] #pylint: disable=unsubscriptable-object
 
-            state["highBracket"] = BracketOrder(client, contract, "BUY", self.account, high)
-            state["lowBracket"] = BracketOrder(client, contract, "SELL", self.account, low)
+            #Check HiLo Spread
+            spread = (float(high) - float(low)) / float(low)
+            if spread > config.HIGH_LOW_SPREAD_RATIO:
+                today.normalDay = False
+                console().info("Spread Ratio: {:.4f} above threshold: {}. Invalid Day".format(spread,config.HIGH_LOW_SPREAD_RATIO))
+                continue
+            else:
+                console().info("Spread Ratio: {:.4f} below threshold: {}. Valid Day".format(spread,config.HIGH_LOW_SPREAD_RATIO))
+
+            #Calculate Stop
+            spreadDiff = (float(high) - float(low)) / 2.0
+            stop = spreadDiff if spreadDiff > config.STOP_SPREAD else  config.STOP_SPREAD
+
+            console().info("Calculated Stop Spread: ${}".format(stop))
+
+            #Submit Orders for the Day
+            contract = self.future.summary
+            state["highBracket"] = BracketOrder(client, contract, "BUY", self.account, high, stop)
+            state["lowBracket"] = BracketOrder(client, contract, "SELL", self.account, low, stop)
             state["executedToday"] = True
 
 def getNewState():
