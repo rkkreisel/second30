@@ -85,7 +85,7 @@ class AppLogic(threading.Thread):
                 console().info("Spread Ratio: {:.4f} below threshold: {}. Valid Day".format(spread,config.HIGH_LOW_SPREAD_RATIO))
 
             #Calculate Stop
-            spreadDiff = (float(high) - float(low)) / 2.0
+            spreadDiff = round(float("{:.2f}".format((float(high) - float(low)) / 2.0))*4) / 4 
             stop = spreadDiff if spreadDiff > config.STOP_SPREAD else  config.STOP_SPREAD
 
             console().info("Calculated Stop Spread: ${}".format(stop))
