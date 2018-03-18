@@ -29,6 +29,9 @@ def getCurrentFuturesContract(contractDetails):
 
         expireDate = datetime(year=expireYear, month=expireMonth, day=expireDay)
 
+        if expireDate <= datetime.today():
+            continue
+
         if soonest is None or (expireDate < soonest[0]): # pylint: disable=unsubscriptable-object
             soonest = [expireDate, data]
 

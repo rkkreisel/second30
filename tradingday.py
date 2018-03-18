@@ -1,6 +1,7 @@
 """ Trading Day and Market Hours Tracking """
 ########## STDLIB IMPORTS ##########
-from datetime import datetime, date
+import re
+from datetime import datetime, date, timedelta
 
 ########## CUSTOM IMPORTS ##########
 import config
@@ -25,15 +26,35 @@ class TradingDay():
 
     def isNormalTradingDay(self):
         """ Check if Date has Normal Trading Hours. Needs config var"""
-        days = self.contractDetails.tradingHours.split(";")
-        dateString = self.today.strftime("%Y%m%d")
-        today = [x for x in days if x.split(":")[0] == dateString]
-        if not today:
-            console().error("Missing Contract Market Hours for Today.")
-        hours = today[0].split(":")[1]
-        if hours == "CLOSED" or hours != config.NORMAL_TRADING_HOURS:
-            return False
-        return True
+
+        def ignoreDate():
+            """ Ignore Bad Days of Malformed Date Strings """
+            ignore = input("Continue Anyway? (y/n) > ")
+            return True if ignore.lower() == 'y' else False
+
+        try:
+            days = self.contractDetails.tradingHours.split(";")
+            today = [x for x in days if x.split(":")[0] == self.today.strftime("%Y%m%d")]
+
+            if not today:
+                console().error("Missing Contract Market Hours for Today.")
+                return ignoreDate()
+
+            hours = today[0].split(":")[1]
+
+            # Trading Hours Cross Mutliple Dates
+            if hours != "CLOSED" and len(hours.split('-')[1]) == 8:
+                hours = parseMultiDayHours(self.contractDetails.tradingHours)
+
+            console().info("Today's Trading Hours Are: {}".format(hours))
+
+            if hours == "CLOSED" or hours != config.NORMAL_TRADING_HOURS:
+                return ignoreDate()
+            return True
+
+        except (IndexError, AttributeError):
+            console().warning("Unable to Calculate Trading Hours.")
+            return ignoreDate()
 
     def isMarketOpen(self):
         """ Check if the Market Is Currently Open """
@@ -49,8 +70,6 @@ class TradingDay():
     def logDayDetails(self):
         """ Write Information about the Current Trading Day to the Console/Log """
         console().info("Today is {}.".format(self.today.strftime(DATE_FMT)))
-        hours = self.contractDetails.tradingHours.split(";")[0].split(":")[1]
-        console().info("Today's Trading Hours Are: {}".format(hours))
         if self.normalDay:
             console().info("Today is a Valid Day for Trading")
         else:
@@ -81,3 +100,23 @@ def updateToday(tradingDay):
             tradingDay.marketOpen = False
             console().info("The Market Has Closed")
     return tradingDay
+
+def parseMultiDayHours(tradingHours):
+    """ Parse TradingHours when Mutli-Date Format is Returned """
+    multi_re = re.compile(r"([0-9]{8}):([0-9]+)-([0-9]{8}):([0-9]+)")
+    days = tradingHours.split(";")
+    today = datetime.today().strftime("%Y%m%d")
+    tomorrow = (datetime.today() + timedelta(days=1)).strftime("%Y%m%d")
+    hours = []
+
+    for day in days:
+        match = multi_re.match(day)
+        if not match:
+            continue
+
+        if match.group(1) not in [today, tomorrow]:
+            continue
+
+        hours += ["{0}-{1}".format(match.group(2), match.group(4))]
+
+    return ",".join(hours)

@@ -2,7 +2,7 @@
 from datetime import datetime
 ########## CONFIGURATION ##########
 
-VERSION = "0.1"
+VERSION = "0.3"
 LOGFILE = "second30_{}.log".format(datetime.now().strftime('%Y%m%d_%H%M'))
 LEDGERFILE = "second30_trades.csv"
 
