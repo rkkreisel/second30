@@ -1,6 +1,6 @@
 """ Futures Contract Generation / Selection """
 ########## STDLIB IMPORTS ##########
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 
 ########## CUSTOM IMPORTS ##########
 from ibapi.contract import Contract
@@ -42,7 +42,8 @@ def getCurrentFuturesContract(contractDetails):
 def updateFuture(client, future):
     """ Get New Futures Contracts Every Day"""
     contractDate = future.tradingHours.split(";")[0].split(":")[0]
-    if contractDate != date.today().strftime("%Y%m%d"):
+    currentDates = [x.strftime("%Y%m%d") for x in [date.today(), date.today() - timedelta(days=1)]]
+    if contractDate not in currentDates:
         getContractDetails(client)
 
 def getBaseContract():
