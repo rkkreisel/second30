@@ -58,7 +58,12 @@ class BracketOrder():
         entryOrder.orderType = "STP"
         entryOrder.auxPrice = entryPrice
         entryOrder.lmtPrice = 0
-        entryOrder.totalQuantity = config.NUM_CONTRACTS
+
+        if config.ENABLE_MANAGED:
+            entryOrder.faProfile = config.ALLOCATION_PROFILE
+        else:
+            entryOrder.totalQuantity = config.NUM_CONTRACTS
+
         entryOrder.transmit = False
 
         #Profit Limit
@@ -70,6 +75,12 @@ class BracketOrder():
         profitOrder.lmtPrice = profitPrice
         profitOrder.auxPrice = 0
         profitOrder.parentId = entryOrder.orderId
+
+        if config.ENABLE_MANAGED:
+            profitOrder.faProfile = config.ALLOCATION_PROFILE
+        else:
+            profitOrder.totalQuantity = config.NUM_CONTRACTS
+
         profitOrder.transmit = False
 
         #Loss Limit
@@ -81,6 +92,12 @@ class BracketOrder():
         lossOrder.auxPrice = lossPrice
         lossOrder.lmtPrice = 0
         lossOrder.parentId = entryOrder.orderId
+
+        if config.ENABLE_MANAGED:
+            lossOrder.faProfile = config.ALLOCATION_PROFILE
+        else:
+            lossOrder.totalQuantity = config.NUM_CONTRACTS
+
         lossOrder.transmit = True
 
         return [entryOrder, profitOrder, lossOrder]
