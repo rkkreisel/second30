@@ -106,7 +106,7 @@ def parseMultiDayHours(tradingHours):
     multi_re = re.compile(r"([0-9]{8}):([0-9]+)-([0-9]{8}):([0-9]+)")
     days = tradingHours.split(";")
     today = datetime.today().strftime("%Y%m%d")
-    tomorrow = (datetime.today() + timedelta(days=1)).strftime("%Y%m%d")
+    yesterday = (datetime.today() - timedelta(days=1)).strftime("%Y%m%d")
     hours = []
 
     for day in days:
@@ -114,7 +114,10 @@ def parseMultiDayHours(tradingHours):
         if not match:
             continue
 
-        if match.group(1) not in [today, tomorrow]:
+        if match.group(1) not in [today, yesterday]:
+            continue
+
+        if match.group(3) not in [today, yesterday]:
             continue
 
         hours += ["{0}-{1}".format(match.group(2), match.group(4))]
