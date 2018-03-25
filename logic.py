@@ -76,7 +76,7 @@ class AppLogic(threading.Thread):
             high, low = state["highLow"]["high"], state["highLow"]["low"] #pylint: disable=unsubscriptable-object
 
             #Check HiLo Spread
-            spread = float("{:.2f}".format((float(high) - float(low)) / float(low)))
+            spread = float("{:.4f}".format((float(high) - float(low)) / float(low)))
             if spread > config.HIGH_LOW_SPREAD_RATIO:
                 today.normalDay = False
                 console().info("Spread Ratio: {:.4f} above threshold: {}. Invalid Day".format(spread,config.HIGH_LOW_SPREAD_RATIO))
