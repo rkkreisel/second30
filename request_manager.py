@@ -41,6 +41,15 @@ class RequestManager():
         self.data[reqId].pop("complete", None)
         return self.data[reqId]
 
+    def getRequestID(self, name):
+        """ Retreive Response Data from a Name """
+        for k, v in self.data.items():
+            try: 
+                if v["name"].lower() == name.lower(): 
+                    return k
+            except:pass
+        return None
+
     def finishRequest(self, reqId):
         """ Signal that a Request has Completed """
         self.data[reqId]["complete"] = True

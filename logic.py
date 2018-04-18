@@ -10,10 +10,11 @@ from contracts import getContractDetails, updateFuture
 from tradingday import TradingDay, updateToday
 import config
 from constants import MARKET_DATA_TYPES
+
 import requests
 from helpers import waitForProp
 from orders import BracketOrder
-from account import Account
+from account import Account, parseAdvisorConfig
 
 
 ########## CLASS DEFINITON ##########
@@ -34,6 +35,15 @@ class AppLogic(threading.Thread):
 
         console().info("Setting Market Data Type : {}".format(config.DATATYPE))
         client.reqMarketDataType(MARKET_DATA_TYPES[config.DATATYPE])
+
+        quantity = config.NUM_CONTRACTS
+        if config.ENABLE_MANAGED:
+            xml = requests.getAdvisorConfig(client)        
+            quantity = parseAdvisorConfig(xml)
+            if not quantity:
+                console().error("Failed to Parse Advisor Profiles")
+                client.interruptHandler()
+            console().info("Set Advisor Total Quantity to : {}".format(quantity))
 
         client.reqOpenOrders()
 
@@ -92,8 +102,8 @@ class AppLogic(threading.Thread):
 
             #Submit Orders for the Day
             contract = self.future.summary
-            state["highBracket"] = BracketOrder(client, contract, "BUY", self.account, high, stop)
-            state["lowBracket"] = BracketOrder(client, contract, "SELL", self.account, low, stop)
+            state["highBracket"] = BracketOrder(client, contract, quantity, "BUY", self.account, high, stop)
+            state["lowBracket"] = BracketOrder(client, contract, quantity, "SELL", self.account, low, stop)
             state["executedToday"] = True
 
 def getNewState():

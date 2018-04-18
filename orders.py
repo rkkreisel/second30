@@ -9,14 +9,14 @@ import config
 
 class BracketOrder():
     """ Bracket Order Creation and Transmission """
-    def __init__(self, client, contract, action, account, price, stop):
+    def __init__(self, client, contract, quantity, action, account, price, stop):
         self.contract = contract
         self.account = account
         self.stopPrice = stop
         if action != "BUY" and action != "SELL":
             raise ValueError("Bad Action Value: {}".format(action))
 
-        orders = self.buildOrders(action, price)
+        orders = self.buildOrders(action, price, quantity)
         self.placeOrders(client, orders)
         client.reqOpenOrders()
 
@@ -33,7 +33,7 @@ class BracketOrder():
             console().info(msg)
             client.placeOrder(order.orderId, self.contract, order)
 
-    def buildOrders(self, action, price):
+    def buildOrders(self, action, price, quantity):
         """ Create Bracket Order with Entry/Profit/Loss """
         console().info(
             "Creating a Bracket Order to {} {}".format(action, self.contract.localSymbol)
@@ -61,9 +61,8 @@ class BracketOrder():
 
         if config.ENABLE_MANAGED:
             entryOrder.faProfile = config.ALLOCATION_PROFILE
-        else:
-            entryOrder.totalQuantity = config.NUM_CONTRACTS
 
+        entryOrder.totalQuantity = quantity
         entryOrder.transmit = False
 
         #Profit Limit
@@ -78,9 +77,8 @@ class BracketOrder():
 
         if config.ENABLE_MANAGED:
             profitOrder.faProfile = config.ALLOCATION_PROFILE
-        else:
-            profitOrder.totalQuantity = config.NUM_CONTRACTS
-
+      
+        profitOrder.totalQuantity = quantity
         profitOrder.transmit = False
 
         #Loss Limit
@@ -95,9 +93,8 @@ class BracketOrder():
 
         if config.ENABLE_MANAGED:
             lossOrder.faProfile = config.ALLOCATION_PROFILE
-        else:
-            lossOrder.totalQuantity = config.NUM_CONTRACTS
 
+        lossOrder.totalQuantity = quantity
         lossOrder.transmit = True
 
         return [entryOrder, profitOrder, lossOrder]

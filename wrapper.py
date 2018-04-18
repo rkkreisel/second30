@@ -141,6 +141,13 @@ class AppWrapper(wrapper.EWrapper):
         if status in ["Cancelled", "Filled"]:
             self.client.reqOpenOrders()
 
+    @iswrapper
+    def receiveFA(self, dataType, profile):
+        console().info("Got the Advisor Profile Data")
+        reqId = self.client.getRequestID("ADVISOR CONFIG")
+        self.client.pushRequestData(reqId, {"xml": profile})
+        self.client.finishRequest(reqId)
+
 def apiMessage(msg):
     """ Print API Messages """
     msg = msg.replace("\n", ". ")

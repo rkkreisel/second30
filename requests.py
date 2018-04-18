@@ -5,6 +5,8 @@ from datetime import datetime, date
 ########## CUSTOM IMPORTS ##########
 from logger import getConsole as console
 import config
+import constants 
+
 ########## SUBSCRIPTIONS ##########
 def subscribePriceData(client, future):
     """ Start Current Price Data Subscription """
@@ -58,5 +60,14 @@ def getFullDayHighLow(client, future):
         reqId, future.summary, "", duration, "1 day", "TRADES", 1, 1, False, []
     )
     return client.waitForRequest(reqId, purge=True)["historical"]
+
+def getAdvisorConfig(client):
+    """Get the XML Configuration for the Advisor Profile """
+    console().info("Getting Advisor Profile Config.")
+    reqId = client.startRequest()
+    
+    client.pushRequestData(reqId, {"name" : "ADVISOR CONFIG"})
+    client.requestFA(constants.FA_PROFILES)
+    return client.waitForRequest(reqId, purge=True)["xml"]
 
 ########## DATA REQUESTS ##########
