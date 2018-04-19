@@ -4,6 +4,7 @@ from ibapi.order import Order
 ########## CUSTOM IMPORTS ##########
 from logger import getConsole as console
 import config
+import constants
 
 ########## CLASS DEFINITION ##########
 
@@ -61,6 +62,7 @@ class BracketOrder():
 
         if config.ENABLE_MANAGED:
             entryOrder.faProfile = config.ALLOCATION_PROFILE
+            entryOrder.faMethod = constants.FA_PROFILE_SHARES
 
         entryOrder.totalQuantity = quantity
         entryOrder.transmit = False
@@ -77,6 +79,7 @@ class BracketOrder():
 
         if config.ENABLE_MANAGED:
             profitOrder.faProfile = config.ALLOCATION_PROFILE
+            entryOrder.faMethod = constants.FA_PROFILE_SHARES
       
         profitOrder.totalQuantity = quantity
         profitOrder.transmit = False
@@ -93,6 +96,7 @@ class BracketOrder():
 
         if config.ENABLE_MANAGED:
             lossOrder.faProfile = config.ALLOCATION_PROFILE
+            entryOrder.faMethod = constants.FA_PROFILE_SHARES
 
         lossOrder.totalQuantity = quantity
         lossOrder.transmit = True
