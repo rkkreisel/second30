@@ -21,25 +21,24 @@ class Algo():
         """ Execute the algorithm """
         contract = self.get_contract()
         tradeContract = self.ib.qualifyContracts(contract.contract)[0]
-
         quantity = helpers.parseAdvisorConfig(self.ib.requestFA(constants.FA_PROFILES))
+
         open_today = helpers.is_open_today(contract)
         if not open_today:
             logging.error("Today is not a valid trading day")
-            #sysexit()
+            sysexit()
         logging.info("Today is a valid trading day.")
 
         logging.info("Waiting for Opening Bell")
-        #self.ib.waitUntil(time(hour=9,minute=30))
+        self.ib.waitUntil(time(hour=9,minute=30))
         logging.info("After market open @ 9:30")
 
         #Wait for Historic Data
         logging.info("Waiting for 10AM")
-        #self.ib.waitUntil(time(hour=10))
+        self.ib.waitUntil(time(hour=10))
         logging.info("After 10 AM")
 
-        #high, low = self.get_high_low(contract)
-        high, low = 2400,2390
+        high, low = self.get_high_low(contract)
         logging.info("Got High: ${} and Low: ${}".format(high,low))
 
         #Check HiLo Spread
