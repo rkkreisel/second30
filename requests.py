@@ -10,12 +10,12 @@ import constants
 ########## SUBSCRIPTIONS ##########
 def subscribePriceData(client, future):
     """ Start Current Price Data Subscription """
-    name = future.summary.localSymbol
+    name = future.contract.localSymbol
     console().info("Requesting a Price Data Subscription For: {}".format(name))
     return client.subscribe(
         name="{} {} Price Data".format(name, config.DATATYPE),
         startFunc=client.reqMktData,
-        startArgs=[client.REQUEST_ID, future.summary, "", False, False, None],
+        startArgs=[client.REQUEST_ID, future.contract, "", False, False, None],
         stopFunc=client.cancelMktData,
         stopArgs=[client.REQUEST_ID],
     )
@@ -43,7 +43,7 @@ def getFirst30HighLow(client, future):
 
     client.pushRequestData(reqId, {"name" : "HIGH/LOW"})
     client.reqHistoricalData(
-        reqId, future.summary, endTime, "1800 S", "30 mins", "TRADES", 1, 1, False, []
+        reqId, future.contract, endTime, "1800 S", "30 mins", "TRADES", 1, 1, False, []
     )
     return client.waitForRequest(reqId, purge=True)["historical"]
 
@@ -57,7 +57,7 @@ def getFullDayHighLow(client, future):
 
     client.pushRequestData(reqId, {"name" : "FULL DAY HIGH/LOW"})
     client.reqHistoricalData(
-        reqId, future.summary, "", duration, "1 day", "TRADES", 1, 1, False, []
+        reqId, future.contract, "", duration, "1 day", "TRADES", 1, 1, False, []
     )
     return client.waitForRequest(reqId, purge=True)["historical"]
 

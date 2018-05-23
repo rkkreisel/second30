@@ -101,7 +101,7 @@ class AppLogic(threading.Thread):
             console().info("Calculated Stop Spread: ${}".format(stop))
 
             #Submit Orders for the Day
-            contract = self.future.summary
+            contract = self.future.contract
             state["highBracket"] = BracketOrder(client, contract, quantity, "BUY", self.account, high, stop)
             state["lowBracket"] = BracketOrder(client, contract, quantity, "SELL", self.account, low, stop)
             state["executedToday"] = True

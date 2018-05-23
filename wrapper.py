@@ -41,8 +41,8 @@ class AppWrapper(wrapper.EWrapper):
     @iswrapper
     def contractDetails(self, reqId, contractDetails):
         super().contractDetails(reqId, contractDetails)
-        symbol = contractDetails.summary.localSymbol
-        expires = contractDetails.summary.lastTradeDateOrContractMonth
+        symbol = contractDetails.contract.localSymbol
+        expires = contractDetails.contract.lastTradeDateOrContractMonth
         console().info("Received Contract Details for: {}. Expires: {}".format(symbol, expires))
         self.client.pushRequestData(reqId, {symbol : contractDetails})
 
@@ -122,7 +122,7 @@ class AppWrapper(wrapper.EWrapper):
 
     @iswrapper
     def orderStatus(self, orderId, status, filled, remaining, avgFillPrice,
-                    permId, parentId, lastFillPrice, clientId, whyHeld):
+                    permId, parentId, lastFillPrice, clientId, whyHeld, mktCapPrice):
 
         if clientId != config.CLIENTID:
             return

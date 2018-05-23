@@ -22,7 +22,7 @@ def getCurrentFuturesContract(contractDetails):
     """ Select the Most Current Symbol """
     soonest = None
     for _, data in contractDetails.items():
-        expireString = data.summary.lastTradeDateOrContractMonth
+        expireString = data.contract.lastTradeDateOrContractMonth
         expireYear = int(expireString[:4])
         expireMonth = int(expireString[4:6])
         expireDay = int(expireString[6:8])
@@ -36,7 +36,7 @@ def getCurrentFuturesContract(contractDetails):
             soonest = [expireDate, data]
 
     contract = soonest[1]
-    console().info("Picked Current FUT Contract: {}".format(contract.summary.localSymbol))
+    console().info("Picked Current FUT Contract: {}".format(contract.contract.localSymbol))
     return contract
 
 def updateFuture(client, future):
