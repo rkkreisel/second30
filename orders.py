@@ -3,8 +3,10 @@ from ib_insync.order import Order
 import config
 import constants
 
-def buildOrders(action, quantity, price, stop):
+def buildOrders(ib, action, quantity, price, stop):
 
+    parentId = ib.client.getReqId()
+    
     #Entry Order
     entryOrder = Order(
         action = action,
@@ -12,8 +14,8 @@ def buildOrders(action, quantity, price, stop):
         auxPrice = price,
         lmtPrice = 0,
         faProfile = config.ALLOCATION_PROFILE,
-        faMethod = constants.FA_PROFILE_SHARES,
         totalQuantity = quantity,
+        orderId = parentId,
         transmit = False
     )
 
@@ -33,8 +35,9 @@ def buildOrders(action, quantity, price, stop):
         auxPrice = 0,
         lmtPrice = profitPrice,
         faProfile = config.ALLOCATION_PROFILE,
-        faMethod = constants.FA_PROFILE_SHARES,
         totalQuantity = quantity,
+        orderId = ib.client.getReqId(),
+        parentId = parentId,
         transmit = False
     )
 
@@ -45,8 +48,9 @@ def buildOrders(action, quantity, price, stop):
         auxPrice = lossPrice,
         lmtPrice = 0,
         faProfile = config.ALLOCATION_PROFILE,
-        faMethod = constants.FA_PROFILE_SHARES,
         totalQuantity = quantity,
+        orderId = ib.client.getReqId(),
+        parentId = parentId,
         transmit = True
     )
 

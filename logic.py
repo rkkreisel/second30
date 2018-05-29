@@ -54,8 +54,8 @@ class Algo():
         stop = spreadDiff if spreadDiff > config.STOP_SPREAD else  config.STOP_SPREAD
         logging.info("Calculated Stop Spread: ${}".format(stop))
 
-        highBracket = orders.buildOrders("BUY", quantity, high, stop)
-        lowBracket = orders.buildOrders("SELL", quantity, low, stop)
+        highBracket = orders.buildOrders(self.ib, "BUY", quantity, high, stop)
+        lowBracket = orders.buildOrders(self.ib, "SELL", quantity, low, stop)
         
         for order in highBracket:
             self.ib.placeOrder(tradeContract, order)
