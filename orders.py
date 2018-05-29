@@ -79,7 +79,6 @@ class BracketOrder():
 
         if config.ENABLE_MANAGED:
             profitOrder.faProfile = config.ALLOCATION_PROFILE
-            entryOrder.faMethod = constants.FA_PROFILE_SHARES
       
         profitOrder.totalQuantity = quantity
         profitOrder.transmit = False
@@ -96,7 +95,6 @@ class BracketOrder():
 
         if config.ENABLE_MANAGED:
             lossOrder.faProfile = config.ALLOCATION_PROFILE
-            entryOrder.faMethod = constants.FA_PROFILE_SHARES
 
         lossOrder.totalQuantity = quantity
         lossOrder.transmit = True
