@@ -62,7 +62,6 @@ class BracketOrder():
 
         if config.ENABLE_MANAGED:
             entryOrder.faProfile = config.ALLOCATION_PROFILE
-            entryOrder.faMethod = constants.FA_PROFILE_SHARES
 
         entryOrder.totalQuantity = quantity
         entryOrder.transmit = False
