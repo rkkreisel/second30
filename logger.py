@@ -5,6 +5,10 @@ import logging
 
 import config
 
+LOGGER_NAME = "SECOND30"
+FMT= '{asctime} {module:>10s}.{funcName:15s} :: {message}'
+DATE_FMT = '%m/%d/%Y %I:%M:%S %p'
+
 def setup():
     """ Configure the Second30 Logging Module """
     if os.path.exists(config.LOGFILE):
@@ -15,10 +19,13 @@ def setup():
         logging.StreamHandler(stream=sys.stdout)
     ]
 
-    logging.basicConfig(
-        level=logging.INFO,
-        format='{asctime} {module:>10s}.{funcName:15s} :: {message}',
-        style='{',
-        datefmt='%m/%d/%Y %I:%M:%S %p',
-        handlers=handlers
-    )
+    logger = logging.getLogger(LOGGER_NAME)
+    logger.setLevel(logging.INFO)
+    logger.propagate = False
+
+    for handler in handlers:
+        handler.setFormatter(logging.Formatter(fmt=FMT, datefmt=DATE_FMT, style='{'))
+        logger.addHandler(handler)
+
+def getLogger():
+    return logging.getLogger(LOGGER_NAME)

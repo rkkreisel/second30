@@ -1,7 +1,7 @@
 """
     Second30 Algorithm Logic
 """
-import logging
+import logger
 from datetime import time, date, datetime
 from sys import exit as sysexit
 from ib_insync import IB
@@ -22,37 +22,38 @@ class Algo():
         contract = self.get_contract()
         tradeContract = self.ib.qualifyContracts(contract.contract)[0]
         quantity = helpers.parseAdvisorConfig(self.ib.requestFA(constants.FA_PROFILES))
+        log = logger.getLogger()
 
         open_today = helpers.is_open_today(contract)
         if not open_today:
-            logging.error("Today is not a valid trading day")
+            log.error("Today is not a valid trading day")
             sysexit()
-        logging.info("Today is a valid trading day.")
+        log.info("Today is a valid trading day.")
 
-        logging.info("Waiting for Opening Bell")
+        log.info("Waiting for Opening Bell")
         self.ib.waitUntil(time(hour=9,minute=30))
-        logging.info("After market open @ 9:30")
+        log.info("After market open @ 9:30")
 
         #Wait for Historic Data
-        logging.info("Waiting for 10AM")
+        log.info("Waiting for 10AM")
         self.ib.waitUntil(time(hour=10))
-        logging.info("After 10 AM")
+        log.info("After 10 AM")
 
         high, low = self.get_high_low(contract)
-        logging.info("Got High: ${} and Low: ${}".format(high,low))
+        log.info("Got High: ${} and Low: ${}".format(high,low))
 
         #Check HiLo Spread
         spread = float("{:.4f}".format((float(high) - float(low)) / float(low)))
         if spread > config.HIGH_LOW_SPREAD_RATIO:
-            logging.info("Spread Ratio: {:.4f} above threshold: {}. Invalid Day".format(spread, config.HIGH_LOW_SPREAD_RATIO))
+            log.info("Spread Ratio: {:.4f} above threshold: {}. Invalid Day".format(spread, config.HIGH_LOW_SPREAD_RATIO))
             return
         else:
-            logging.info("Spread Ratio: {:.4f} below threshold: {}. Valid Day".format(spread,config.HIGH_LOW_SPREAD_RATIO))
+            log.info("Spread Ratio: {:.4f} below threshold: {}. Valid Day".format(spread,config.HIGH_LOW_SPREAD_RATIO))
 
          #Calculate Stop
         spreadDiff = round(float("{:.2f}".format((float(high) - float(low)) / 2.0))*4) / 4 
         stop = spreadDiff if spreadDiff > config.STOP_SPREAD else  config.STOP_SPREAD
-        logging.info("Calculated Stop Spread: ${}".format(stop))
+        log.info("Calculated Stop Spread: ${}".format(stop))
 
         highBracket = orders.buildOrders(self.ib, "BUY", quantity, high, stop)
         lowBracket = orders.buildOrders(self.ib, "SELL", quantity, low, stop)
@@ -72,7 +73,7 @@ class Algo():
             ContFuture(symbol=config.SYMBOL, exchange=config.EXCHANGE)
         )
         if not contract:
-            logging.error("Failed to Grab Continuous Future {}".format(config.SYMBOL))
+            log.error("Failed to Grab Continuous Future {}".format(config.SYMBOL))
             sysexit()
         else:
             return contract[0]
