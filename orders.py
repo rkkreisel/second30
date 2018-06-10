@@ -7,7 +7,16 @@ def buildOrders(ib, action, quantity, price, stop):
 
     parentId = ib.client.getReqId()
 
-    entryPrice = price + config.ENTRY_SPREAD
+    if action == "BUY":
+        entryPrice = price + config.ENTRY_SPREAD
+        bracketAction = "SELL"
+        profitPrice = entryPrice + config.PROFIT_SPREAD
+        lossPrice = entryPrice - stop
+    else:
+        entryPrice = price - config.ENTRY_SPREAD
+        bracketAction = "BUY"
+        profitPrice = entryPrice - config.PROFIT_SPREAD
+        lossPrice = entryPrice + stop
 
     #Entry Order
     entryOrder = Order(
@@ -20,15 +29,6 @@ def buildOrders(ib, action, quantity, price, stop):
         orderId = parentId,
         transmit = False
     )
-
-    if action == "BUY":
-        bracketAction = "SELL"
-        profitPrice = entryPrice + config.PROFIT_SPREAD
-        lossPrice = entryPrice - stop
-    else:
-        bracketAction = "BUY"
-        profitPrice = entryPrice - config.PROFIT_SPREAD
-        lossPrice = entryPrice + stop
 
     #Profit Order
     profitOrder = Order(
