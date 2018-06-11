@@ -7,6 +7,8 @@ from sys import exit as sysexit
 from ib_insync import IB
 from ib_insync.contract import ContFuture, Contract, Future
 
+log = logger.getLogger()
+
 import constants
 import config
 import helpers
@@ -21,8 +23,9 @@ class Algo():
         """ Execute the algorithm """
         contract = self.get_contract()
         tradeContract = self.ib.qualifyContracts(contract.contract)[0]
+        log.info("Got Trading Contract: {}".format(tradeContract.localSymbol))
         quantity = helpers.parseAdvisorConfig(self.ib.requestFA(constants.FA_PROFILES))
-        log = logger.getLogger()
+        log.info("Got Quanity from Advisor Profile {}:{}".format(config.ALLOCATION_PROFILE, quantity))
 
         open_today = helpers.is_open_today(contract)
         if not open_today:
@@ -46,7 +49,7 @@ class Algo():
         spread = float("{:.4f}".format((float(high) - float(low)) / float(low)))
         if spread > config.HIGH_LOW_SPREAD_RATIO:
             log.info("Spread Ratio: {:.4f} above threshold: {}. Invalid Day".format(spread, config.HIGH_LOW_SPREAD_RATIO))
-            return
+            sysexit()
         else:
             log.info("Spread Ratio: {:.4f} below threshold: {}. Valid Day".format(spread,config.HIGH_LOW_SPREAD_RATIO))
 
@@ -58,10 +61,17 @@ class Algo():
         highBracket = orders.buildOrders(self.ib, "BUY", quantity, high, stop)
         lowBracket = orders.buildOrders(self.ib, "SELL", quantity, low, stop)
         
+        log.info("Placing Upper Bracket Orders...")
         for order in highBracket:
             self.ib.placeOrder(tradeContract, order)
+            log.info("  Upper: {:<4} {}. TYPE = {} AUX = ${:<8} LMT = ${:<8}".format(order.action, tradeContract.localSymbol, order.orderType, order.auxPrice, order.lmtPrice))
+        log.info("Placing Lower Bracket Orders...")
         for order in lowBracket:
             self.ib.placeOrder(tradeContract, order)
+            price = order.auxPrice if order.auxPrice > 0 else order.lmtPrice
+            log.info("  Lower: {:<4} {}. {} @ ${:<8}".format(order.action, tradeContract.localSymbol, order.orderType, price))
+
+        log.info("")
 
         for trade in self.ib.trades():
             while not trade.isDone():
