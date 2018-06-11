@@ -64,8 +64,8 @@ class Algo():
         log.info("Placing Upper Bracket Orders...")
         for order in highBracket:
             self.ib.placeOrder(tradeContract, order)
-            log.info("  Upper: {:<4} {}. TYPE = {} AUX = ${:<8} LMT = ${:<8}".format(order.action, tradeContract.localSymbol, order.orderType, order.auxPrice, order.lmtPrice))
-        log.info("Placing Lower Bracket Orders...")
+            price = order.auxPrice if order.auxPrice > 0 else order.lmtPrice
+            log.info("  Upper: {:<4} {}. {} @ ${:<8}".format(order.action, tradeContract.localSymbol, order.orderType, price))        log.info("Placing Lower Bracket Orders...")
         for order in lowBracket:
             self.ib.placeOrder(tradeContract, order)
             price = order.auxPrice if order.auxPrice > 0 else order.lmtPrice
